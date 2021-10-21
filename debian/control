@@ -1,0 +1,12 @@
+Source: ros-galactic-microstrain-inertial-driver
+Section: misc
+Priority: optional
+Maintainer: Rob Fisher <rob.fisher@parker.com>
+Build-Depends: debhelper (>= 9.0.0), curl, jq, libcurl4-openssl-dev, ros-galactic-ament-cmake-gtest, ros-galactic-ament-cpplint, ros-galactic-diagnostic-updater, ros-galactic-geometry-msgs, ros-galactic-lifecycle-msgs, ros-galactic-microstrain-inertial-msgs, ros-galactic-nav-msgs, ros-galactic-rclcpp-lifecycle, ros-galactic-rosidl-default-generators, ros-galactic-sensor-msgs, ros-galactic-std-msgs, ros-galactic-std-srvs, ros-galactic-tf2, ros-galactic-tf2-geometry-msgs, ros-galactic-tf2-ros, ros-galactic-ros-workspace, ros-galactic-rosidl-typesupport-fastrtps-c, ros-galactic-rosidl-typesupport-fastrtps-cpp
+Homepage: https://github.com/LORD-MicroStrain/microstrain_inertial
+Standards-Version: 3.9.2
+
+Package: ros-galactic-microstrain-inertial-driver
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-galactic-diagnostic-aggregator, ros-galactic-diagnostic-updater, ros-galactic-geometry-msgs, ros-galactic-lifecycle-msgs, ros-galactic-microstrain-inertial-msgs, ros-galactic-nav-msgs, ros-galactic-rclcpp-lifecycle, ros-galactic-rosidl-default-runtime, ros-galactic-sensor-msgs, ros-galactic-std-msgs, ros-galactic-std-srvs, ros-galactic-tf2, ros-galactic-tf2-geometry-msgs, ros-galactic-tf2-ros, ros-galactic-ros-workspace
+Description: The ros_mscl package provides a driver for the LORD/Microstrain inertial products.
