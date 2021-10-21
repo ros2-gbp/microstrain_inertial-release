@@ -1,0 +1,12 @@
+Source: ros-galactic-microstrain-inertial-examples
+Section: misc
+Priority: optional
+Maintainer: Rob Fisher <rob.fisher@parker.com>
+Build-Depends: debhelper (>= 9.0.0), ros-galactic-ament-cmake, ros-galactic-microstrain-inertial-msgs, ros-galactic-rclcpp, ros-galactic-rclcpp-components, ros-galactic-sensor-msgs, ros-galactic-std-msgs, ros-galactic-ros-workspace
+Homepage: https://github.com/LORD-MicroStrain/microstrain_inertial
+Standards-Version: 3.9.2
+
+Package: ros-galactic-microstrain-inertial-examples
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-galactic-microstrain-inertial-msgs, ros-galactic-rclcpp, ros-galactic-rclcpp-components, ros-galactic-rclpy, ros-galactic-sensor-msgs, ros-galactic-std-msgs, ros-galactic-ros-workspace
+Description: Example listener for Parker LORD Sensing inertial device driver ros_mscl (C++).
