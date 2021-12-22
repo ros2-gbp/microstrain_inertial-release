@@ -19,6 +19,7 @@ Both the `ros` and `ros2` branches share most of their code by using gis submodu
 
 * [microstrain_inertial_driver_common](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/tree/main) submoduled in this repo at `microstrain_inertial_driver/microstrain_inertial_driver_common`
 * [microstrain_inertial_msgs_common](https://github.com/LORD-MicroStrain/microstrain_inertial_msgs_common/tree/main) submoduled in this repo at `microstrain_inertial_msgs/microstrain_inertial_msgs_common`
+* [microstrain_inertial_rqt_common](https://github.com/LORD-MicroStrain/microstrain_inertial_rqt_common/tree/main) submoduled in this repo at `microstrain_inertial_rqt/microstrain_inertial_rqt_common`
 
 #### Different Package Names
 
@@ -32,15 +33,26 @@ Due to requirements laid out by the ROS maintainers [here](https://www.ros.org/r
 * `microstrain_inertial_driver` -- ROS node that will communicate with the devices
 * `microstrain_inertial_msgs` -- Collection of messages produced by the `microstrain_inertial_driver` node
 * `microstrain_inertial_examples` -- Collection of examples that show how to interact with the `microstrain_inertial_driver` node. Currently contains one simple C++ and python subscriber node
+* `microstrain_inertial_rqt` -- Collection of RQT plugins to view the status of inertial devices when running the `microstrain_inertial_driver`
 
 ## Build Instructions
+
+### Docker
+
+As of `v2.2.0` the `microstrain_inertial_driver` is distributed as a docker image. More information on how to use the image can be found on [DockerHub](https://hub.docker.com/r/microstrain/ros-microstrain_inertial_driver)
 
 ### Buildfarm
 
 As of `v2.0.6` this package is being built and distributed by the ROS build farm. If you do not need to modify the source, it is recommended to install directly from the buildfarm by running the following commands where `ROS_DISTRO` is the version of ROS you are using such as `foxy` or `galactic`:
 
+Driver:
 ```bash
 sudo apt-get update && sudo apt-get install ros-ROS_DISTRO-microstrain-inertial-driver
+```
+
+RQT:
+```bash
+sudo apt-get update && sudo apt-get install ros-ROS_DISTRO-microstrain-inertial-rqt
 ```
 
 For more information on the ROS distros and platforms we support, please see [index.ros.org](https://index.ros.org/r/microstrain_inertial/github-LORD-MicroStrain-microstrain_inertial/#galactic)
@@ -114,11 +126,11 @@ This will launch two nodes that publish data to different namespaces:
 An example subscriber node can be found here: [Microstrain Examples](./microstrain_inertial_examples)  
 
 
-## Docker Integration
+## Docker Development
 
 ### VSCode
 
-The easiest way to use docker while still using an IDE is to use VSCode as an IDE. Follow the steps below to develop on this repo in a docker container
+The easiest way to develop in docker while still using an IDE is to use VSCode as an IDE. Follow the steps below to develop on this repo in a docker container
 
 1. Install the following dependencies:
     1. [VSCode](https://code.visualstudio.com/)
@@ -133,8 +145,8 @@ The easiest way to use docker while still using an IDE is to use VSCode as an ID
 
 ### Make
 
-If you are comfortable working from the command line, or want to produce runtime images, the [Makefile](./devcontainer/Makefile) in the [.devcontainer](./devcontainer) directory
-can be used to build docker images, run a shell inside the docker images and produce a runtime image. Follow the steps below to setup your environment to use the `Makefile`
+If you are comfortable working from the command line, or want to produce your own runtime images, the [Makefile](./devcontainer/Makefile) in the [.devcontainer](./devcontainer) 
+directory can be used to build docker images, run a shell inside the docker images and produce a runtime image. Follow the steps below to setup your environment to use the `Makefile`
 
 1. Install the following dependencies:
     1. [Make](https://www.gnu.org/software/make/)
@@ -143,11 +155,19 @@ can be used to build docker images, run a shell inside the docker images and pro
         1. Run the following command to register the qemu binaries with docker: `docker run --rm --privileged multiarch/qemu-user-static:register`
 
 The `Makefile` exposes the following tasks. They can all be run from the `.devcontainer` directory:
-* `make build-shell` - Builds the docker image and starts a shell session in the image allowing the user to develop and build the ROS project using common commands such as `catkin_make`
-* `make image` - Builds the runtim image that contains only the required dependencies and the ROS node. The resulting image is names `ros-mscl`
+* `make build-shell` - Builds the development docker image and starts a shell session in the image allowing the user to develop and build the ROS project using common commands such as `catkin_make`
+* `make image` - Builds the runtime image that contains only the required dependencies and the ROS node.
 * `make clean` - Cleans up after the above two tasks
 
 ## License
-microstrain_inertial is released under the MIT License - see the `LICENSE` file in the source distribution.
 
-Copyright (c)  2021, Parker Hannifin Corp.
+Different packages in this repo are releasd under different licenses. For more information, see the LICENSE files in each of the package directories.
+
+Here is a quick overview of the licenses used in each package:
+
+| Package                                                                  | License |
+| ------------------------------------------------------------------------ | ------- |
+| [microstrain_inertial_driver](./microstrain_inertial_driver/LICENSE)     | MIT     |
+| [microstrain_inertial_msgs](./microstrain_inertial_msgs/LICENSE)         | MIT     |
+| [microstrain_inertial_rqt](./microstrain_inertial_rqt/LICENSE)           | BSD     |
+| [microstrain_inertial_examples](./microstrain_inertial_examples/LICENSE) | MIT     |
