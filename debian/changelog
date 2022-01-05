@@ -1,0 +1,13 @@
+ros-rolling-microstrain-inertial-rqt (2.4.0-1focal) focal; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Wed, 05 Jan 2022 05:00:00 -0000
+
+ros-rolling-microstrain-inertial-rqt (2.3.0-1focal) focal; urgency=high
+
+  * Initial Release of microstrain_inertial_rqt package
+
+ -- Rob Fisher <rob.fisher@parker.com>  Wed, 22 Dec 2021 05:00:00 -0000
+
+
