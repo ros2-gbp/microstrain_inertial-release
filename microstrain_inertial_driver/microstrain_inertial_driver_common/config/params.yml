@@ -11,7 +11,7 @@
 # General Settings 
 # ****************************************************************** 
 
-# port is the main port that the device will communicate over. For all devices except the GQy, this is the only available port.
+# port is the main port that the device will communicate over. For all devices except the GQ7, this is the only available port.
 # aux_port is only available for the GQ7 and is only needed when streaming RTCM corrections to the device from ROS, or if you want to publish NMEA sentences from this node
 port        : "/dev/ttyACM0"
 aux_port    : "/dev/ttyACM1"
@@ -56,6 +56,12 @@ save_settings : False
 #      false - Use PC received time for timestamping
 #      true  - Use device generated timestamp
 use_device_timestamp : False
+
+# Controls if the driver uses ROS time for timestamping messages. Can be useful when running under simulation.
+# NOTE: This can be used in conjunction with use_device_timestamp in which case, the device timestmap will be used for sensor_msgs/TimeReference messages, and ROS time will be used for all other messages
+#       false - Use PC received time for timestamping
+#       true  - Use ROS time for timestamping all non sensor_msgs/TimeReference messages
+use_ros_time : False
 
 # Controls if the driver creates a raw binary file
 #      false - Do not create the file
@@ -119,7 +125,9 @@ gnss2_data_rate : 2
 #Note: Make this as accurate as possible for good performance 
 gnss2_antenna_offset : [0.0, 0.7, -1.0]
 
-# (GQ7 Only) Enable RTK dongle interface 
+# (GQ7 Only) Enable RTK dongle interface
+# Note: Enabling this will cause the node to publish on one of two topics depending
+#   on the version of the RTK dongle connected to the GQ7
 rtk_dongle_enable : False
 
 # (GQ7 Only) Allow the user to send RTCM messages to this node, and stream those messages to the GQ7
@@ -140,7 +148,7 @@ filter_data_rate : 10
 #     0 = None, 1 = Euler Angles, 2 - matrix, 3 - quaternion
 #     Notes: These are different ways of setting the same parameter in the device.
 #            The different options are provided as a convenience.
-#            Support for matrix and quaternion options is firmware version dependent (Quaternion not currently supported on GQ7)
+#            Support for matrix and quaternion options is firmware version dependent (GQ7 supports Quaternion as of firmware 1.0.07)
 #            Quaternion order is [i, j, k, w]
 filter_sensor2vehicle_frame_selector : 1
 
