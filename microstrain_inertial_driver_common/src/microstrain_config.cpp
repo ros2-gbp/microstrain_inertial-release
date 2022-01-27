@@ -44,6 +44,7 @@ bool MicrostrainConfig::configure(RosNodeType* node)
 
   // Device
   get_param<bool>(node, "use_device_timestamp", use_device_timestamp_, false);
+  get_param<bool>(node, "use_ros_time", use_ros_time_, false);
   get_param<bool>(node, "use_enu_frame", use_enu_frame_, false);
 
   // If using ENU frame, reflect in the device frame id
@@ -583,6 +584,10 @@ bool MicrostrainConfig::configureGNSS(RosNodeType* node, uint8_t gnss_id)
 
   // Enable publishing aiding status messages
   publish_gnss_aiding_status_[gnss_id] = inertial_device_->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_AIDING_MEASUREMENT_ENABLE);
+  if (!publish_gnss_aiding_status_[gnss_id])
+  {
+    MICROSTRAIN_INFO(node_, "Note: Device not support publishing GNSS Aiding measurements.");
+  }
 
   inertial_device_->enableDataStream(gnss_data_class);
   return true;
@@ -607,6 +612,9 @@ bool MicrostrainConfig::configureRTK(RosNodeType* node)
         supportedChannels.push_back(mscl::MipChannel(channel, gnss3_rate));
       }
     }
+
+    // set the GNSS channel fields
+    inertial_device_->setActiveChannelFields(mscl::MipTypes::DataClass::CLASS_GNSS3, supportedChannels);
 
     inertial_device_->enableDataStream(mscl::MipTypes::DataClass::CLASS_GNSS3);
   }
@@ -840,9 +848,10 @@ bool MicrostrainConfig::configureFilter(RosNodeType* node)
                      filter_relative_position_frame);
     inertial_device_->setRelativePositionReference(ref);
   }
-  else
+  else if (publish_filter_relative_pos_)
   {
-    MICROSTRAIN_INFO(node_, "Note: The device does not support the relative position command.");
+    MICROSTRAIN_ERROR(node_, "The device does not support the relative position command, but it was requested with \"publish_relative_position\"");
+    return false;
   }
 
   // (GQ7 only) Set the filter speed lever arm
