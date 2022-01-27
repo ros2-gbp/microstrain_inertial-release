@@ -63,8 +63,7 @@ bool MicrostrainPublishers::configure()
     gnss_time_pub_[GNSS1_ID] = create_publisher<TimeReferenceMsg>(node_, "gnss1/time_ref", 100);
     gnss_fix_info_pub_[GNSS1_ID] = create_publisher<GNSSFixInfoMsg>(node_, "gnss1/fix_info", 100);
 
-    if (config_->inertial_device_->features().supportsCommand(
-            mscl::MipTypes::Command::CMD_EF_AIDING_MEASUREMENT_ENABLE))
+    if (config_->publish_gnss_aiding_status_[GNSS1_ID])
     {
       gnss_aiding_status_pub_[GNSS1_ID] = create_publisher<GNSSAidingStatusMsg>(node_, "gnss1/aiding_status", 100);
     }
@@ -79,8 +78,7 @@ bool MicrostrainPublishers::configure()
     gnss_time_pub_[GNSS2_ID] = create_publisher<TimeReferenceMsg>(node_, "gnss2/time_ref", 100);
     gnss_fix_info_pub_[GNSS2_ID] = create_publisher<GNSSFixInfoMsg>(node_, "gnss2/fix_info", 100);
 
-    if (config_->inertial_device_->features().supportsCommand(
-            mscl::MipTypes::Command::CMD_EF_AIDING_MEASUREMENT_ENABLE))
+    if (config_->publish_gnss_aiding_status_[GNSS2_ID])
     {
       gnss_aiding_status_pub_[GNSS2_ID] = create_publisher<GNSSAidingStatusMsg>(node_, "gnss2/aiding_status", 100);
     }
@@ -91,11 +89,10 @@ bool MicrostrainPublishers::configure()
   {
     MICROSTRAIN_INFO(node_, "Publishing RTK data.");
     rtk_pub_ = create_publisher<RTKStatusMsg>(node_, "rtk/status", 100);
+    rtk_pub_v1_ = create_publisher<RTKStatusMsgV1>(node_, "rtk/status_v1", 100);
   }
 
   // If the device has a kalman filter, publish relevant topics
-  MICROSTRAIN_INFO(node_, "checking if we should publish filter data %d %d", config_->publish_filter_,
-                   config_->supports_filter_);
   if (config_->publish_filter_ && config_->supports_filter_)
   {
     MICROSTRAIN_INFO(node_, "Publishing Filter data.");
