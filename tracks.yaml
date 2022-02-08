@@ -79,4 +79,5 @@ tracks:
     ros_distro: rolling
     vcs_type: git
     vcs_uri: https://github.com/LORD-MicroStrain/microstrain_inertial.git
-    version: :{auto}
+    version: 2.5.0
+    version_saved: :{auto}
