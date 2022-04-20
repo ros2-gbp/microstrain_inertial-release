@@ -1,0 +1,28 @@
+ros-humble-microstrain-inertial-rqt (2.5.1-2bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Tue, 15 Feb 2022 08:00:00 -0000
+
+ros-humble-microstrain-inertial-rqt (2.5.0-2bullseye) bullseye; urgency=high
+
+  * Added RTK v2 support
+    * Changed quickview default namespace from gx5 to 'empty'
+  * Fixed submodule initialization
+  * Contributors: dacuster, robbiefish
+
+ -- Rob Fisher <rob.fisher@parker.com>  Thu, 27 Jan 2022 08:00:00 -0000
+
+ros-humble-microstrain-inertial-rqt (2.4.0-2bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Wed, 05 Jan 2022 08:00:00 -0000
+
+ros-humble-microstrain-inertial-rqt (2.3.0-2bullseye) bullseye; urgency=high
+
+  * Initial Release of microstrain_inertial_rqt package
+
+ -- Rob Fisher <rob.fisher@parker.com>  Wed, 22 Dec 2021 08:00:00 -0000
+
+
