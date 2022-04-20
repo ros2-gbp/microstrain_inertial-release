@@ -1,0 +1,12 @@
+Source: ros-humble-microstrain-inertial-driver
+Section: misc
+Priority: optional
+Maintainer: Rob Fisher <rob.fisher@parker.com>
+Build-Depends: debhelper (>= 9.0.0), curl, jq, libcurl4-openssl-dev, ros-humble-ament-cmake-gtest <!nocheck>, ros-humble-ament-cpplint <!nocheck>, ros-humble-diagnostic-updater, ros-humble-geometry-msgs, ros-humble-lifecycle-msgs, ros-humble-mavros-msgs, ros-humble-microstrain-inertial-msgs, ros-humble-nav-msgs, ros-humble-nmea-msgs, ros-humble-rclcpp-lifecycle, ros-humble-ros-environment, ros-humble-rosidl-default-generators, ros-humble-sensor-msgs, ros-humble-std-msgs, ros-humble-std-srvs, ros-humble-tf2, ros-humble-tf2-geometry-msgs, ros-humble-tf2-ros, ros-humble-ros-workspace, ros-humble-rosidl-typesupport-fastrtps-c, ros-humble-rosidl-typesupport-fastrtps-cpp
+Homepage: https://github.com/LORD-MicroStrain/microstrain_inertial
+Standards-Version: 3.9.2
+
+Package: ros-humble-microstrain-inertial-driver
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-humble-diagnostic-aggregator, ros-humble-diagnostic-updater, ros-humble-geometry-msgs, ros-humble-lifecycle-msgs, ros-humble-mavros-msgs, ros-humble-microstrain-inertial-msgs, ros-humble-nav-msgs, ros-humble-nmea-msgs, ros-humble-rclcpp-lifecycle, ros-humble-rosidl-default-runtime, ros-humble-sensor-msgs, ros-humble-std-msgs, ros-humble-std-srvs, ros-humble-tf2, ros-humble-tf2-geometry-msgs, ros-humble-tf2-ros, ros-humble-ros-workspace
+Description: The ros_mscl package provides a driver for the LORD/Microstrain inertial products.
