@@ -1,1 +1,1 @@
-{"base": "8b81825", "parent": "debian/rolling/microstrain_inertial_driver", "previous": "6bd2bf5", "trim": "", "trimbase": ""}
+{"base": "b34048d", "parent": "debian/humble/microstrain_inertial_driver", "previous": "21e2713", "trim": "", "trimbase": ""}
