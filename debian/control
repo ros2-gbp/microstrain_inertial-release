@@ -1,0 +1,12 @@
+Source: ros-humble-microstrain-inertial-rqt
+Section: misc
+Priority: optional
+Maintainer: Rob Fisher <rob.fisher@parker.com>
+Build-Depends: debhelper (>= 9.0.0), ros-humble-geometry-msgs, ros-humble-microstrain-inertial-msgs, ros-humble-nav-msgs, ros-humble-rclpy, ros-humble-rqt-gui, ros-humble-rqt-gui-py, ros-humble-std-msgs, ros-humble-ros-workspace, python3-all, python3-setuptools, dh-python
+Homepage: https://github.com/LORD-MicroStrain/microstrain_inertial
+Standards-Version: 3.9.2
+
+Package: ros-humble-microstrain-inertial-rqt
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-humble-geometry-msgs, ros-humble-microstrain-inertial-msgs, ros-humble-nav-msgs, ros-humble-rclpy, ros-humble-rqt-gui, ros-humble-rqt-gui-py, ros-humble-std-msgs, ros-humble-ros-workspace
+Description: The microstrain_inertial_rqt package provides several RQT widgets to view the status of Microstrain devices
