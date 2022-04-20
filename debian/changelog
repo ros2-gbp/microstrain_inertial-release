@@ -1,0 +1,93 @@
+ros-humble-microstrain-inertial-examples (2.5.1-2bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Tue, 15 Feb 2022 08:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (2.5.0-2bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Thu, 27 Jan 2022 08:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (2.4.0-2bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Wed, 05 Jan 2022 08:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (2.3.0-2bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Wed, 22 Dec 2021 08:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (2.2.0-2bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Fri, 03 Dec 2021 08:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (2.1.0-2bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Fri, 12 Nov 2021 08:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (2.0.6-2bullseye) bullseye; urgency=high
+
+  * Fixes CMake build errors experienced on the build farm
+  * Contributors: Rob Fisher, robbiefish
+
+ -- Rob Fisher <rob.fisher@parker.com>  Fri, 22 Oct 2021 07:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (2.0.5-2bullseye) bullseye; urgency=high
+
+  * Updates maintainers and dependencies in preparation for ROS build farm
+  * Renames packages to be more consistent with ROS naming conventions
+  * Contributors: Rob Fisher, robbiefish
+
+ -- Rob Fisher <rob.fisher@parker.com>  Thu, 21 Oct 2021 07:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (1.1.4-2bullseye) bullseye; urgency=high
+
+  * Merge branch 'master' of https://github.com/LORD-MicroStrain/ROS-MSCL into develop
+  * Properly installs examples to match instructions
+  * Contributors: robbiefish
+
+ -- Rob Fisher <rob.fisher@parker.com>  Fri, 30 Jul 2021 07:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (1.1.3-2bullseye) bullseye; urgency=high
+
+  * Removed duplicate Filter LLH Pos entry in message format
+    Preparing for release on Bloom
+  * 
+    
+      * move driver package content to ros_mscl folder
+      * add name argument to microstrain.launch file to specify the namespace (default: gx5)
+      * update README.md
+      * add basic subscriber example (C++)
+    
+  * Contributors: Nathan Miller, mgill
+
+ -- Rob Fisher <rob.fisher@parker.com>  Wed, 21 Apr 2021 07:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (0.0.4-2bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Mon, 07 Oct 2019 07:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (0.0.3-2bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Mon, 05 Aug 2019 07:00:00 -0000
+
+ros-humble-microstrain-inertial-examples (0.0.2-2bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Tue, 28 May 2019 07:00:00 -0000
+
+
