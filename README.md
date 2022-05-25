@@ -1,3 +1,30 @@
+## microstrain_inertial (humble) - 2.6.0-1
+
+The packages in the `microstrain_inertial` repository were released into the `humble` distro by running `/home/rob/.local/bin/bloom-release microstrain_inertial --rosdistro humble --no-web --non-interactive` on `Wed, 25 May 2022 15:27:56 -0000`
+
+These packages were released:
+- `microstrain_inertial_driver`
+- `microstrain_inertial_examples`
+- `microstrain_inertial_msgs`
+- `microstrain_inertial_rqt`
+
+Version of package(s) in repository `microstrain_inertial`:
+
+- upstream repository: https://github.com/LORD-MicroStrain/microstrain_inertial.git
+- release repository: https://github.com/ros2-gbp/microstrain_inertial-release.git
+- rosdistro version: `2.5.1-2`
+- old version: `2.5.1-2`
+- new version: `2.6.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.7`
+- catkin_pkg version: `0.4.16`
+- rosdep version: `0.18.0`
+- rosdistro version: `0.8.0`
+- vcstools version: `0.1.42`
+
+
 ## microstrain_inertial (rolling) - 2.6.0-1
 
 The packages in the `microstrain_inertial` repository were released into the `rolling` distro by running `/home/rob/.local/bin/bloom-release microstrain_inertial --rosdistro rolling --no-web --non-interactive` on `Wed, 25 May 2022 04:12:42 -0000`
