@@ -2,6 +2,11 @@
 Changelog for package microstrain_inertial_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.6.0 (2022-05-25)
+------------------
+* Converts message definitions to use unix line endings (`#138 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/138>`_)
+* Contributors: Lucas Walter
+
 2.5.1 (2022-02-15)
 ------------------
 
