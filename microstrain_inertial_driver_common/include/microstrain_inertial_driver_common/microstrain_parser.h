@@ -11,6 +11,7 @@
 #ifndef MICROSTRAIN_INERTIAL_DRIVER_COMMON_MICROSTRAIN_PARSER_H
 #define MICROSTRAIN_INERTIAL_DRIVER_COMMON_MICROSTRAIN_PARSER_H
 
+#include <string>
 #include "microstrain_inertial_driver_common/microstrain_defs.h"
 #include "microstrain_inertial_driver_common/microstrain_ros_funcs.h"
 #include "microstrain_inertial_driver_common/microstrain_config.h"
@@ -18,6 +19,10 @@
 
 namespace microstrain
 {
+
+static constexpr auto NMEA_MAX_LENGTH = 82;
+static constexpr auto NMEA_START_SEQUENCE = "$GPGGA,";
+static constexpr auto NMEA_STOP_SEQUENCE = "\r\n";
 
 /**
  * Contains parsing code that will parse messages read from the device and publish them
@@ -141,6 +146,8 @@ private:
   float curr_filter_att_uncert_roll_;
   float curr_filter_att_uncert_pitch_;
   float curr_filter_att_uncert_yaw_;
+
+  std::string aux_string_;
 };  // struct MicrostrainParser
 
 }  // namespace microstrain
