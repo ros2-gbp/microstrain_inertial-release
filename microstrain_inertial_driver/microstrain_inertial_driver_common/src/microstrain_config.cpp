@@ -615,8 +615,7 @@ bool MicrostrainConfig::configureGNSS(RosNodeType* node, uint8_t gnss_id)
   }
   else
   {
-    MICROSTRAIN_ERROR(node_, "Could not set GNSS%d antenna offset!", gnss_id + 1);
-    return false;
+    MICROSTRAIN_INFO(node_, "Note: Device does not support configuring GNSS%d offset", gnss_id + 1);
   }
   return true;
 }
@@ -1198,8 +1197,7 @@ bool MicrostrainConfig::configureSensor2vehicle(RosNodeType* node)
     }
     else
     {
-      MICROSTRAIN_ERROR(node_, "**Failed to set sensor2vehicle frame transformation with euler angles!");
-      return false;
+      MICROSTRAIN_INFO(node_, "Note: device does not support sensor2vehicle frame transformation with euler angles");
     }
   }
   // Matrix
@@ -1234,8 +1232,7 @@ bool MicrostrainConfig::configureSensor2vehicle(RosNodeType* node)
     }
     else
     {
-      MICROSTRAIN_ERROR(node_, "**Failed to set sensor2vehicle frame transformation with a matrix!");
-      return false;
+      MICROSTRAIN_INFO(node_, "Note: device does not support sensor2vehicle frame transformation with a matrix");
     }
   }
   // Quaternion
@@ -1275,8 +1272,7 @@ bool MicrostrainConfig::configureSensor2vehicle(RosNodeType* node)
     }
     else
     {
-      MICROSTRAIN_ERROR(node_, "**Failed to set sensor2vehicle frame transformation with quaternion!");
-      return false;
+      MICROSTRAIN_INFO(node_, "Note: device does not support sensor2vehicle frame transformation with a quaternion");
     }
   }
   return true;
@@ -1410,9 +1406,15 @@ void MicrostrainConfig::configureFilterAidingMeasurement(const mscl::InertialTyp
       break;
   }
 
+
+  // Hotfix for this version of MSCL not properly reporting that the CV7-AR does not support Mag aiding
+  // TODO(robbiefish): Remove this when the new version of MSCL is released
+  const mscl::MipModel model(inertial_device_->modelNumber());
+  const bool cv7_ar_mag_hotfix = (aiding_measurement == mscl::InertialTypes::AidingMeasurementSource::MAGNETOMETER_AIDING && model.baseModel().nodeModel() == mscl::MipModels::node_3dm_cv7_ar);
+
   // Check if the requested aiding measurement is supported
   const mscl::AidingMeasurementSourceOptions& supported_options = inertial_device_->features().supportedAidingMeasurementOptions();
-  if (std::find(supported_options.begin(), supported_options.end(), aiding_measurement) != supported_options.end())
+  if (std::find(supported_options.begin(), supported_options.end(), aiding_measurement) != supported_options.end() && !cv7_ar_mag_hotfix)
   {
     MICROSTRAIN_INFO(node_, "Filter aiding %s = %d", aiding_measurement_name.c_str(), enable);
     inertial_device_->enableDisableAidingMeasurement(aiding_measurement, enable);
