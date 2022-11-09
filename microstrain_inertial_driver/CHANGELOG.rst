@@ -2,6 +2,24 @@
 Changelog for package microstrain_inertial_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.7.1 (2022-11-09)
+------------------
+* Updates submodule with CV7 mag aiding bugfix (`#188 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/188>`_)
+* Enable usage of substitution arguments in override params YAML file. (`#187 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/187>`_)
+* ROS Do not error when the device does not support antenna offset or S2V commands (`#182 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/182>`_)
+  * Do not error when the device does not support antenna offset or S2V commands
+* Contributors: Joey Yang, Rob
+
+2.7.0 (2022-09-23)
+------------------
+* ROS2 serial improvements (`#177 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/178>`_)
+  * Adds logging loop every second that will print the number of bytes read and written
+  * Adds ability to configure the baudrate on the device using `set_baud`
+  * Changes `*_data_rate` fields to floating point numbers to allow users to configure data rates at non whole numbers
+  * Fixes bug where a quaternion would be indexed into before it was populated
+* ROS2 Updates params file to note required changes for devices, and corrects incorrect documentation (`#170 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/169>`_)
+* Contributors: Rob
+
 2.6.0 (2022-05-25)
 ------------------
 * ROS Fixes NMEA parsing to not fail when we find certain MIP packets (`#159 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/159>`_)
