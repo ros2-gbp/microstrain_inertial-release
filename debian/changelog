@@ -1,0 +1,58 @@
+ros-iron-microstrain-inertial-rqt (3.0.1-3bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Thu, 09 Feb 2023 16:00:00 -0000
+
+ros-iron-microstrain-inertial-rqt (3.0.0-3bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Tue, 10 Jan 2023 16:00:00 -0000
+
+ros-iron-microstrain-inertial-rqt (2.7.1-3bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Tue, 08 Nov 2022 16:00:00 -0000
+
+ros-iron-microstrain-inertial-rqt (2.7.0-3bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Thu, 22 Sep 2022 16:00:00 -0000
+
+ros-iron-microstrain-inertial-rqt (2.6.0-3bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Tue, 24 May 2022 16:00:00 -0000
+
+ros-iron-microstrain-inertial-rqt (2.5.1-3bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Mon, 14 Feb 2022 16:00:00 -0000
+
+ros-iron-microstrain-inertial-rqt (2.5.0-3bullseye) bullseye; urgency=high
+
+  * Added RTK v2 support
+    * Changed quickview default namespace from gx5 to 'empty'
+  * Fixed submodule initialization
+  * Contributors: dacuster, robbiefish
+
+ -- Rob Fisher <rob.fisher@parker.com>  Wed, 26 Jan 2022 16:00:00 -0000
+
+ros-iron-microstrain-inertial-rqt (2.4.0-3bullseye) bullseye; urgency=high
+
+
+
+ -- Rob Fisher <rob.fisher@parker.com>  Tue, 04 Jan 2022 16:00:00 -0000
+
+ros-iron-microstrain-inertial-rqt (2.3.0-3bullseye) bullseye; urgency=high
+
+  * Initial Release of microstrain_inertial_rqt package
+
+ -- Rob Fisher <rob.fisher@parker.com>  Tue, 21 Dec 2021 16:00:00 -0000
+
+
