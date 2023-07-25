@@ -6,6 +6,9 @@
 #define COM_PORT_BUFFER_SIZE  0x200
 
 #ifndef WIN32 //Unix only
+
+#define INVALID_HANDLE_VALUE -1
+
 speed_t baud_rate_to_speed(int baud_rate)
 {
     switch(baud_rate)
@@ -54,6 +57,11 @@ speed_t baud_rate_to_speed(int baud_rate)
 }
 #endif
 
+void serial_port_init(serial_port *port)
+{
+    port->handle = INVALID_HANDLE_VALUE;
+}
+
 bool serial_port_open(serial_port *port, const char *port_str, int baudrate)
 {
     if(port_str == NULL)
@@ -78,6 +86,8 @@ bool serial_port_open(serial_port *port, const char *port_str, int baudrate)
     if(SetupComm(port->handle, COM_PORT_BUFFER_SIZE, COM_PORT_BUFFER_SIZE) == 0)
     {
         MIP_LOG_ERROR("Unable to setup com port buffer size (%d)\n", GetLastError());
+        CloseHandle(port->handle);
+        port->handle = INVALID_HANDLE_VALUE;
         return false;
     }
 
@@ -102,6 +112,7 @@ bool serial_port_open(serial_port *port, const char *port_str, int baudrate)
     {
         MIP_LOG_ERROR("Unable to get com state\n");
         CloseHandle(port->handle);
+        port->handle = INVALID_HANDLE_VALUE;
         return false;
     }
 
@@ -119,6 +130,7 @@ bool serial_port_open(serial_port *port, const char *port_str, int baudrate)
     {
         MIP_LOG_ERROR("Unable to set com state\n");
         CloseHandle(port->handle);
+        port->handle = INVALID_HANDLE_VALUE;
         return false;
     }
 
@@ -132,17 +144,26 @@ bool serial_port_open(serial_port *port, const char *port_str, int baudrate)
         return false;
     }
 
+    if( ioctl(port->handle, TIOCEXCL) < 0 )
+    {
+        MIP_LOG_WARN("Unable to set exclusive mode on serial port (%d): %s\n", errno, strerror(errno));
+    }
+
     // Set up baud rate and other serial device options
     struct termios serial_port_settings;
     if (tcgetattr(port->handle, &serial_port_settings) < 0)
     {
         MIP_LOG_ERROR("Unable to get serial port settings (%d): %s\n", errno, strerror(errno));
+        close(port->handle);
+        port->handle = -1;
         return false;
     }
 
     if (cfsetispeed(&serial_port_settings, baud_rate_to_speed(baudrate)) < 0 || cfsetospeed(&serial_port_settings, baud_rate_to_speed(baudrate)) < 0)
     {
         MIP_LOG_ERROR("Unable to set baud rate (%d): %s\n", errno, strerror(errno));
+        close(port->handle);
+        port->handle = -1;
         return false;
     }
 
@@ -160,34 +181,33 @@ bool serial_port_open(serial_port *port, const char *port_str, int baudrate)
     if(tcsetattr(port->handle, TCSANOW, &serial_port_settings) < 0)
     {
         MIP_LOG_ERROR("Unable to save serial port settings (%d): %s\n", errno, strerror(errno));
+        close(port->handle);
+        port->handle = -1;
         return false;
     }
-    
+
     // Flush any waiting data
     tcflush(port->handle, TCIOFLUSH);
 
 #endif
 
     //Success
-    port->is_open = true;
     return true;
 }
 
 bool serial_port_close(serial_port *port)
 {
-    if(!port->is_open)
+    if(!serial_port_is_open(port))
         return false;
 
 #ifdef WIN32 //Windows
-
     //Close the serial port
     CloseHandle(port->handle);
-
 #else //Linux
     close(port->handle);
 #endif
+    port->handle = INVALID_HANDLE_VALUE;
 
-    port->is_open = false;
     return true;
 }
 
@@ -197,7 +217,7 @@ bool serial_port_write(serial_port *port, const void *buffer, size_t num_bytes, 
     *bytes_written = 0;
 
     //Check for a valid port handle
-    if(!port->is_open)
+    if(!serial_port_is_open(port))
         return false;
 
 #ifdef WIN32 //Windows
@@ -219,7 +239,7 @@ bool serial_port_write(serial_port *port, const void *buffer, size_t num_bytes, 
         return true;
     else if(*bytes_written == (size_t)-1)
         MIP_LOG_ERROR("Failed to write serial data (%d): %s\n", errno, strerror(errno));
-    
+
 #endif
 
     return false;
@@ -231,7 +251,7 @@ bool serial_port_read(serial_port *port, void *buffer, size_t num_bytes, int wai
     *bytes_read = 0;
 
     //Check for a valid port handle
-    if(!port->is_open)
+    if(!serial_port_is_open(port))
         return false;
 
 #ifdef WIN32 //Windows
@@ -255,7 +275,17 @@ bool serial_port_read(serial_port *port, void *buffer, size_t num_bytes, int wai
     int poll_status = poll(&poll_fd, 1, wait_time);
 
     // Keep reading and polling while there is still data available
-    if (poll_status > 0 && poll_fd.revents & POLLIN)
+    if (poll_status == -1)
+    {
+        MIP_LOG_ERROR("Failed to poll serial port (%d): %s\n", errno, strerror(errno));
+        return false;
+    }
+    else if (poll_fd.revents & POLLERR || poll_fd.revents & POLLHUP || poll_fd.revents & POLLNVAL)
+    {
+        MIP_LOG_ERROR("Poll encountered error\n");
+        return false;
+    }
+    else if (poll_status > 0 && poll_fd.revents & POLLIN)
     {
         ssize_t local_bytes_read = read(port->handle, buffer, num_bytes);
 
@@ -278,7 +308,7 @@ bool serial_port_read(serial_port *port, void *buffer, size_t num_bytes, int wai
 uint32_t serial_port_read_count(serial_port *port)
 {
     //Check for a valid port handle
-    if(!port->is_open)
+    if(!serial_port_is_open(port))
         return 0;
 
 #ifdef WIN32 //Windows
@@ -303,5 +333,9 @@ uint32_t serial_port_read_count(serial_port *port)
 
 bool serial_port_is_open(serial_port *port)
 {
-    return port->is_open;
+#ifdef WIN32
+    return port->handle != INVALID_HANDLE_VALUE;
+#else
+    return port->handle >= 0;
+#endif
 }
