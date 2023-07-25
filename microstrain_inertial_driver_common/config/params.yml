@@ -41,6 +41,13 @@ poll_port      : False
 poll_rate_hz   : 1.0
 poll_max_tries : 60
 
+# Number of times to attempt to reconnect to the device if it disconnects while running
+# If configure_after_reconnect is true, we will also reconfigure the device after we reconnect
+#      NOTE: It is strongly recommended to configure after reconnect unless device_setup is set to false
+#            as the device will likely initialize in a different state otherwise
+reconnect_attempts : 0
+configure_after_reconnect : True
+
 # Controls if the driver outputs data with-respect-to ENU frame
 #      false - position, velocity, and orientation are WRT the NED frame (native device frame)
 #      true  - position, velocity, and orientation are WRT the ENU frame
@@ -107,9 +114,9 @@ imu_overrange_status_data_rate : -1  # Rate of imu/overrange_status topic
 
 # Static IMU message covariance values (the device does not generate these) 
 # Since internally these are std::vector we need to use the rosparam tags 
-imu_orientation_cov : [0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01]
-imu_linear_cov      : [0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01]
-imu_angular_cov     : [0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01]
+imu_orientation_cov : [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.01]
+imu_linear_cov      : [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.01]
+imu_angular_cov     : [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.01]
 
 # ****************************************************************** 
 # GNSS Settings (only applicable for devices with GNSS) 
@@ -191,14 +198,18 @@ filter_data_rate : 10
 #
 #      Note: The parameters' "filter_odom_data_rate", "filter_imu_data_rate", "filter_relative_odom_data_rate" associated ROS messages share several MIP fields,
 #            so if more than one is set to stream, and they are set to stream at different rates, messages will be published on both topics, at the higher rate
+#      Note: The parameters' "filter_navsatfix_data_rate", and "filter_aiding_status_data_rate" associated ROS messages share several MIP fields,
+#            so if more than one is set to stream, and they are set to stream at different rates, messages will be published on both topics, at the higher rate
 filter_status_data_rate                     : -1  # Rate of nav/status topic
 filter_heading_data_rate                    : -1  # Rate of nav/heading topic
 filter_heading_state_data_rate              : -1  # Rate of nav/heading_state topic
+filter_navsatfix_data_rate                  : -1  # Rate of nav/fix topic
 filter_odom_data_rate                       : -1  # Rate of nav/odom topic
 filter_imu_data_rate                        : -1  # Rate of nav/filtered_imu/data
 filter_relative_odom_data_rate              : -1  # Rate of nav/relative_pos topic and the transform between filter_frame_id and filter_child_frame_id
                                                   # Note that this data rate will also control the rate at which the transform between "filter_frame_id" and "filter_child_frame_id" will be published at
 filter_aiding_status_data_rate              : -1  # Rate of gnss1/aiding_status and gnss2/aiding_status topics
+filter_antenna_offset_correction_data_rate  : -1  # Rate of gnss1/antenna_offset_corection and gnss2/antenna_offset_correction topics
 filter_gnss_dual_antenna_data_rate          : -1  # Rate of nav/dual_antenna_status topic
 filter_aiding_measurement_summary_data_rate : -1  # Rate of nav/aiding_summary topic
 
@@ -373,11 +384,16 @@ filter_init_attitude : [0.0, 0.0, 0.0]
 #   1 - Relative ECEF position
 #   2 - Relative LLH position
 #
+#   Source =
+#   0 - Position will be reported relative to the base station. filter_relative_position_ref will be ignored
+#   1 - Position will be reported relative to filter_relative_position_ref
+#
 #   Reference position - Units provided by reference frame (ECEF - meters, LLH - deg, deg, meters)
 #   Note: prior to firmware version 1.0.06 this command will fail for non-positive heights.  1.0.06 fixes this)
 filter_relative_position_config : False
 filter_relative_position_frame  : 2
-filter_relative_position_ref    : [0, 0, 0.01]
+filter_relative_position_source : 1
+filter_relative_position_ref    : [0.0, 0.0, 0.01]
 
 # (GQ7 only) Speed Lever Arm Configuration
 #   Lever Arm - In vehicle reference frame (meters)
@@ -396,7 +412,7 @@ filter_enable_vertical_gyro_constraint : False
 
 # (GQ7 only) GNSS Antenna Calibration Control
 # Note: When enabled, the filter will enable lever arm error tracking, up to the maximum offset specified in meters.
-filter_enable_gnss_antenna_cal     : False
+filter_enable_gnss_antenna_cal     : True
 filter_gnss_antenna_cal_max_offset : 0.1
 
 # (GQ7/CV7 only) PPS Source
