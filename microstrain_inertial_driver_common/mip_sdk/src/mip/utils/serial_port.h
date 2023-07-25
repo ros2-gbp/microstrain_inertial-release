@@ -35,7 +35,6 @@ extern "C" {
 
 typedef struct serial_port
 {
-    bool is_open;
 #ifdef WIN32 //Windows
     HANDLE handle;
 #else //Linux
@@ -43,7 +42,7 @@ typedef struct serial_port
 #endif
 } serial_port;
 
-
+void serial_port_init(serial_port *port);
 bool serial_port_open(serial_port *port, const char *port_str, int baudrate);
 bool serial_port_close(serial_port *port);
 bool serial_port_write(serial_port *port, const void *buffer, size_t num_bytes, size_t *bytes_written);
