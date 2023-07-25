@@ -35,6 +35,7 @@ bool Publishers::configure()
   for (const auto& pub : gnss_odom_pub_) pub->configure(node_, config_);
   for (const auto& pub : gnss_time_pub_) pub->configure(node_, config_);
   for (const auto& pub : gnss_aiding_status_pub_) pub->configure(node_, config_);
+  for (const auto& pub : gnss_antenna_offset_correction_pub_) pub->configure(node_, config_);
   for (const auto& pub : gnss_fix_info_pub_) pub->configure(node_, config_);
   for (const auto& pub : gnss_sbas_info_pub_) pub->configure(node_, config_);
   for (const auto& pub : gnss_rf_error_detection_pub_) pub->configure(node_, config_);
@@ -46,12 +47,13 @@ bool Publishers::configure()
   filter_heading_pub_->configure(node_, config_);
   filter_heading_state_pub_->configure(node_, config_);
   filter_aiding_mesaurement_summary_pub_->configure(node_, config_);
+  filter_navsatfix_pub_->configure(node_, config_);
   filter_odom_pub_->configure(node_, config_);
   filter_imu_pub_->configure(node_, config_);
   gnss_dual_antenna_status_pub_->configure(node_, config_);
 
   // Only publish relative odom if we support the relative position descriptor set
-  if (config_->mip_device_->supportsDescriptor(mip::data_filter::DESCRIPTOR_SET, mip::data_filter::RelPosNed::DESCRIPTOR_SET))
+  if (config_->mip_device_->supportsDescriptor(mip::data_filter::DESCRIPTOR_SET, mip::data_filter::RelPosNed::FIELD_DESCRIPTOR))
     filter_relative_odom_pub_->configure(node_, config_);
 
   if (config_->publish_nmea_)
@@ -66,6 +68,7 @@ bool Publishers::configure()
   for (int i = 0; i < gnss_odom_pub_.size(); i++) gnss_odom_pub_[i]->getMessage()->header.frame_id = config_->gnss_frame_id_[i];
   for (int i = 0; i < gnss_time_pub_.size(); i++) gnss_time_pub_[i]->getMessage()->header.frame_id = config_->gnss_frame_id_[i];
 
+  filter_navsatfix_pub_->getMessage()->header.frame_id = config_->filter_frame_id_;
   filter_odom_pub_->getMessage()->header.frame_id = config_->filter_frame_id_;
   filter_odom_pub_->getMessage()->child_frame_id = config_->filter_child_frame_id_;
   filter_imu_pub_->getMessage()->header.frame_id = config_->filter_frame_id_;
@@ -79,6 +82,9 @@ bool Publishers::configure()
   std::copy(config_->imu_linear_cov_.begin(), config_->imu_linear_cov_.end(), imu_msg->linear_acceleration_covariance.begin());
   std::copy(config_->imu_angular_cov_.begin(), config_->imu_angular_cov_.end(), imu_msg->angular_velocity_covariance.begin());
   std::copy(config_->imu_orientation_cov_.begin(), config_->imu_orientation_cov_.end(), imu_msg->orientation_covariance.begin());
+
+  auto filter_navstafix_msg = filter_navsatfix_pub_->getMessage();
+  filter_navstafix_msg->position_covariance_type = NavSatFixMsg::COVARIANCE_TYPE_DIAGONAL_KNOWN;
 
   // Transform broadcaster setup
   transform_broadcaster_ = createTransformBroadcaster(node_);
@@ -140,6 +146,7 @@ bool Publishers::configure()
   registerDataCallback<mip::data_filter::LinearAccel, &Publishers::handleFilterLinearAccel>();
   registerDataCallback<mip::data_filter::RelPosNed, &Publishers::handleFilterRelPosNed>();
   registerDataCallback<mip::data_filter::GnssPosAidStatus, &Publishers::handleFilterGnssPosAidStatus>();
+  registerDataCallback<mip::data_filter::MultiAntennaOffsetCorrection, &Publishers::handleFilterMultiAntennaOffsetCorrection>();
   registerDataCallback<mip::data_filter::GnssDualAntennaStatus, &Publishers::handleFilterGnssDualAntennaStatus>();
   registerDataCallback<mip::data_filter::AidingMeasurementSummary, &Publishers::handleFilterAidingMeasurementSummary>();
 
@@ -159,6 +166,7 @@ bool Publishers::activate()
   for (const auto& pub : gnss_odom_pub_) pub->activate();
   for (const auto& pub : gnss_time_pub_) pub->activate();
   for (const auto& pub : gnss_aiding_status_pub_) pub->activate();
+  for (const auto& pub : gnss_antenna_offset_correction_pub_) pub->activate();
   for (const auto& pub : gnss_fix_info_pub_) pub->activate();
   for (const auto& pub : gnss_sbas_info_pub_) pub->activate();
   for (const auto& pub : gnss_rf_error_detection_pub_) pub->activate();
@@ -170,6 +178,7 @@ bool Publishers::activate()
   filter_heading_pub_->activate();
   filter_heading_state_pub_->activate();
   filter_aiding_mesaurement_summary_pub_->activate();
+  filter_navsatfix_pub_->activate();
   filter_odom_pub_->activate();
   filter_relative_odom_pub_->activate();
   filter_imu_pub_->activate();
@@ -190,6 +199,7 @@ bool Publishers::deactivate()
   for (const auto& pub : gnss_odom_pub_) pub->deactivate();
   for (const auto& pub : gnss_time_pub_) pub->deactivate();
   for (const auto& pub : gnss_aiding_status_pub_) pub->deactivate();
+  for (const auto& pub : gnss_antenna_offset_correction_pub_) pub->deactivate();
   for (const auto& pub : gnss_fix_info_pub_) pub->deactivate();
   for (const auto& pub : gnss_sbas_info_pub_) pub->deactivate();
   for (const auto& pub : gnss_rf_error_detection_pub_) pub->deactivate();
@@ -201,6 +211,7 @@ bool Publishers::deactivate()
   filter_heading_pub_->deactivate();
   filter_heading_state_pub_->deactivate();
   filter_aiding_mesaurement_summary_pub_->deactivate();
+  filter_navsatfix_pub_->deactivate();
   filter_odom_pub_->deactivate();
   filter_relative_odom_pub_->deactivate();
   filter_imu_pub_->deactivate();
@@ -210,9 +221,13 @@ bool Publishers::deactivate()
 
 void Publishers::publish()
 {
-  // If the corresponding messages were updated, publish the transforms
-  if (filter_relative_odom_pub_ && filter_relative_odom_pub_->updated())
+  // If the transform was updated, publish it
+  if (filter_relative_transform_msg_translation_updated_ && filter_relative_transform_msg_rotation_updated_)
+  {
+    filter_relative_transform_msg_translation_updated_ = false;
+    filter_relative_transform_msg_rotation_updated_ = false;
     transform_broadcaster_->sendTransform(filter_relative_transform_msg_);
+  }
 
   imu_pub_->publish();
   mag_pub_->publish();
@@ -223,6 +238,7 @@ void Publishers::publish()
   for (const auto& pub : gnss_odom_pub_) pub->publish();
   for (const auto& pub : gnss_time_pub_) pub->publish();
   for (const auto& pub : gnss_aiding_status_pub_) pub->publish();
+  for (const auto& pub : gnss_antenna_offset_correction_pub_) pub->publish();
   for (const auto& pub : gnss_fix_info_pub_) pub->publish();
   for (const auto& pub : gnss_sbas_info_pub_) pub->publish();
   for (const auto& pub : gnss_rf_error_detection_pub_) pub->publish();
@@ -234,6 +250,7 @@ void Publishers::publish()
   filter_heading_pub_->publish();
   filter_heading_state_pub_->publish();
   filter_aiding_mesaurement_summary_pub_->publish();
+  filter_navsatfix_pub_->publish();
   filter_odom_pub_->publish();
   filter_relative_odom_pub_->publish();
   filter_imu_pub_->publish();
@@ -625,6 +642,14 @@ void Publishers::handleFilterHeadingUpdateState(const mip::data_filter::HeadingU
 
 void Publishers::handleFilterPositionLlh(const mip::data_filter::PositionLlh& position_llh, const uint8_t descriptor_set, mip::Timestamp timestamp)
 {
+  // Filter navsatfix message
+  auto filter_navsatfix_msg = filter_navsatfix_pub_->getMessageToUpdate();
+  updateHeaderTime(&(filter_navsatfix_msg->header), descriptor_set, timestamp);
+  filter_navsatfix_msg->longitude = position_llh.longitude;
+  filter_navsatfix_msg->latitude = position_llh.latitude;
+  filter_navsatfix_msg->altitude = position_llh.ellipsoid_height;
+
+  // Filter odometry message
   auto filter_odom_msg = filter_odom_pub_->getMessageToUpdate();
   updateHeaderTime(&(filter_odom_msg->header), descriptor_set, timestamp);
   if (config_->use_enu_frame_)
@@ -642,6 +667,13 @@ void Publishers::handleFilterPositionLlh(const mip::data_filter::PositionLlh& po
 
 void Publishers::handleFilterPositionLlhUncertainty(const mip::data_filter::PositionLlhUncertainty& position_llh_uncertainty, const uint8_t descriptor_set, mip::Timestamp timestamp)
 {
+  // Filter navsatfix message
+  auto filter_navsatfix_msg = filter_navsatfix_pub_->getMessageToUpdate();
+  updateHeaderTime(&(filter_navsatfix_msg->header), descriptor_set, timestamp);
+  filter_navsatfix_msg->position_covariance[0] = pow(position_llh_uncertainty.east, 2);
+  filter_navsatfix_msg->position_covariance[4] = pow(position_llh_uncertainty.north, 2);
+  filter_navsatfix_msg->position_covariance[8] = pow(position_llh_uncertainty.down, 2);
+
   // Filter odometry message
   auto filter_odom_msg = filter_odom_pub_->getMessageToUpdate();
   updateHeaderTime(&(filter_odom_msg->header), descriptor_set, timestamp);
@@ -698,6 +730,7 @@ void Publishers::handleFilterAttitudeQuaternion(const mip::data_filter::Attitude
   filter_relative_odom_msg->pose.pose.orientation = filter_odom_msg->pose.pose.orientation;
 
   // Relative transform
+  filter_relative_transform_msg_rotation_updated_ = true;
   updateHeaderTime(&(filter_relative_transform_msg_.header), descriptor_set, timestamp);
   filter_relative_transform_msg_.transform.rotation = filter_odom_msg->pose.pose.orientation;
 
@@ -723,7 +756,7 @@ void Publishers::handleFilterEulerAnglesUncertainty(const mip::data_filter::Eule
 
   // Filter relative odometry message
   auto filter_relative_odom_msg = filter_relative_odom_pub_->getMessageToUpdate();
-  updateHeaderTime(&(filter_relative_transform_msg_.header), descriptor_set, timestamp);
+  updateHeaderTime(&(filter_relative_odom_msg->header), descriptor_set, timestamp);
   filter_relative_odom_msg->pose.covariance = filter_odom_msg->pose.covariance;
 }
 
@@ -757,7 +790,7 @@ void Publishers::handleFilterVelocityNed(const mip::data_filter::VelocityNed& ve
 
   // Filter relative odometry message
   auto filter_relative_odom_msg = filter_relative_odom_pub_->getMessageToUpdate();
-  updateHeaderTime(&(filter_relative_transform_msg_.header), descriptor_set, timestamp);
+  updateHeaderTime(&(filter_relative_odom_msg->header), descriptor_set, timestamp);
   filter_relative_odom_msg->twist.twist.linear = filter_odom_msg->twist.twist.linear;
 }
 
@@ -780,7 +813,7 @@ void Publishers::handleFilterVelocityNedUncertainty(const mip::data_filter::Velo
 
   // Filter relative odometry message
   auto filter_relative_odom_msg = filter_relative_odom_pub_->getMessageToUpdate();
-  updateHeaderTime(&(filter_relative_transform_msg_.header), descriptor_set, timestamp);
+  updateHeaderTime(&(filter_relative_odom_msg->header), descriptor_set, timestamp);
   filter_relative_odom_msg->twist.covariance = filter_odom_msg->twist.covariance;
 }
 
@@ -805,7 +838,7 @@ void Publishers::handleFilterCompAngularRate(const mip::data_filter::CompAngular
 
   // Filter relative odometry message
   auto filter_relative_odom_msg = filter_relative_odom_pub_->getMessageToUpdate();
-  updateHeaderTime(&(filter_relative_transform_msg_.header), descriptor_set, timestamp);
+  updateHeaderTime(&(filter_relative_odom_msg->header), descriptor_set, timestamp);
   filter_relative_odom_msg->twist.twist.angular = filter_odom_msg->twist.twist.angular;
 }
 
@@ -847,7 +880,7 @@ void Publishers::handleFilterRelPosNed(const mip::data_filter::RelPosNed& rel_po
 {
   // Filter relative odometry message
   auto filter_relative_odom_msg = filter_relative_odom_pub_->getMessageToUpdate();
-  updateHeaderTime(&(filter_relative_transform_msg_.header), descriptor_set, timestamp);
+  updateHeaderTime(&(filter_relative_odom_msg->header), descriptor_set, timestamp);
   if (config_->use_enu_frame_)
   {
     filter_relative_odom_msg->pose.pose.position.x = rel_pos_ned.relative_position[1];
@@ -862,6 +895,8 @@ void Publishers::handleFilterRelPosNed(const mip::data_filter::RelPosNed& rel_po
   }
 
   // Relative transform
+  filter_relative_transform_msg_translation_updated_ = true;
+  updateHeaderTime(&(filter_relative_transform_msg_.header), descriptor_set, timestamp);
   filter_relative_transform_msg_.transform.translation.x = filter_relative_odom_msg->pose.pose.position.x;
   filter_relative_transform_msg_.transform.translation.y = filter_relative_odom_msg->pose.pose.position.y;
   filter_relative_transform_msg_.transform.translation.z = filter_relative_odom_msg->pose.pose.position.z;
@@ -869,6 +904,10 @@ void Publishers::handleFilterRelPosNed(const mip::data_filter::RelPosNed& rel_po
 
 void Publishers::handleFilterGnssPosAidStatus(const mip::data_filter::GnssPosAidStatus& gnss_pos_aid_status, const uint8_t descriptor_set, mip::Timestamp timestamp)
 {
+  // GNSS position aiding status message
+  if (gnss_aiding_status_pub_.size() < gnss_pos_aid_status.receiver_id)
+    return;
+
   const uint8_t gnss_index = gnss_pos_aid_status.receiver_id - 1;
   auto gnss_aiding_status_msg = gnss_aiding_status_pub_[gnss_index]->getMessageToUpdate();
   gnss_aiding_status_msg->gps_tow = gnss_pos_aid_status.time_of_week;
@@ -887,6 +926,39 @@ void Publishers::handleFilterGnssPosAidStatus(const mip::data_filter::GnssPosAid
   gnss_aiding_status_msg->using_beidou = gnss_pos_aid_status.status & mip::data_filter::GnssAidStatusFlags::BEI_B1
                                       || gnss_pos_aid_status.status & mip::data_filter::GnssAidStatusFlags::BEI_B2
                                       || gnss_pos_aid_status.status & mip::data_filter::GnssAidStatusFlags::BEI_B3;
+
+  // Filter NavSatFix message
+  auto filter_navsatfix_msg = filter_navsatfix_pub_->getMessageToUpdate();
+  bool status_set = false;
+  if (filter_navsatfix_msg->status.status <= NavSatFixMsg::_status_type::STATUS_GBAS_FIX && gnss_aiding_status_msg->differential_corrections)
+  {
+    status_set = true;
+    filter_navsatfix_msg->status.status = NavSatFixMsg::_status_type::STATUS_GBAS_FIX;
+  }
+  else if (filter_navsatfix_msg->status.status <= NavSatFixMsg::_status_type::STATUS_SBAS_FIX && gnss_fix_info_pub_[gnss_index]->getMessage()->sbas_used)
+  {
+    status_set = true;
+    filter_navsatfix_msg->status.status = NavSatFixMsg::_status_type::STATUS_SBAS_FIX;
+  }
+  else if (filter_navsatfix_msg->status.status <= NavSatFixMsg::_status_type::STATUS_FIX && gnss_aiding_status_msg->has_position_fix)
+  {
+    status_set = true;
+    filter_navsatfix_msg->status.status = NavSatFixMsg::_status_type::STATUS_FIX;
+  }
+  if (!status_set)
+    filter_navsatfix_msg->status.status = NavSatFixMsg::_status_type::STATUS_NO_FIX;
+}
+
+void Publishers::handleFilterMultiAntennaOffsetCorrection(const mip::data_filter::MultiAntennaOffsetCorrection& multi_antenna_offset_correction, const uint8_t descriptor_set, mip::Timestamp timestamp)
+{
+  if (gnss_antenna_offset_correction_pub_.size() < multi_antenna_offset_correction.receiver_id)
+    return;
+
+  const uint8_t gnss_index = multi_antenna_offset_correction.receiver_id - 1;
+  auto gnss_antenna_offset_correction_msg = gnss_antenna_offset_correction_pub_[gnss_index]->getMessageToUpdate();
+  gnss_antenna_offset_correction_msg->offset[0] = multi_antenna_offset_correction.offset[0];
+  gnss_antenna_offset_correction_msg->offset[1] = multi_antenna_offset_correction.offset[1];
+  gnss_antenna_offset_correction_msg->offset[2] = multi_antenna_offset_correction.offset[2];
 }
 
 void Publishers::handleFilterGnssDualAntennaStatus(const mip::data_filter::GnssDualAntennaStatus& gnss_dual_antenna_status, const uint8_t descriptor_set, mip::Timestamp timestamp)
@@ -975,7 +1047,7 @@ void Publishers::setGpsTime(RosTimeType* time, const mip::data_shared::GpsTimest
   double subseconds = modf(timestamp.tow, &seconds);
 
   // Seconds since start of Unix time = seconds between 1970 and 1980 + number of weeks since 1980 * number of seconds in a week + number of complete seconds past in current week - leap seconds since start of GPS time
-  const uint64_t utc_milliseconds = static_cast<uint64_t>((315964800 + timestamp.week_number * 604800 + static_cast<uint64_t>(seconds) - 18) * 1000L) + static_cast<uint64_t>(std::round(subseconds * 1000.0));
+  const uint64_t utc_milliseconds = static_cast<uint64_t>((315964800 + timestamp.week_number * 604800 + static_cast<uint64_t>(seconds) - GPS_LEAP_SECONDS) * 1000L) + static_cast<uint64_t>(std::round(subseconds * 1000.0));
   setRosTime(time, utc_milliseconds / 1000, (utc_milliseconds % 1000) * 1000000);
 }
 
