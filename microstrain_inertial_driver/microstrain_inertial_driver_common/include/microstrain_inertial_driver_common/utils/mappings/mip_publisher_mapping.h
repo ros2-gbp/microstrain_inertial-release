@@ -37,6 +37,7 @@ static constexpr auto GNSS1_ODOM_TOPIC = "gnss1/odom";
 static constexpr auto GNSS1_TIME_REF_TOPIC = "gnss1/time_ref";
 static constexpr auto GNSS1_FIX_INFO_TOPIC = "gnss1/fix_info";
 static constexpr auto GNSS1_AIDING_STATUS_TOPIC = "gnss1/aiding_status";
+static constexpr auto GNSS1_ANTENNA_OFFSET_CORRECTION_TOPIC = "gnss1/antenna_offset_correction";
 static constexpr auto GNSS1_SBAS_INFO_TOPIC = "gnss1/sbas_info";
 static constexpr auto GNSS1_RF_ERROR_DETECTION_TOPIC = "gnss1/rf_error_detection";
 
@@ -45,6 +46,7 @@ static constexpr auto GNSS2_ODOM_TOPIC = "gnss2/odom";
 static constexpr auto GNSS2_TIME_REF_TOPIC = "gnss2/time_ref";
 static constexpr auto GNSS2_FIX_INFO_TOPIC = "gnss2/fix_info";
 static constexpr auto GNSS2_AIDING_STATUS_TOPIC = "gnss2/aiding_status";
+static constexpr auto GNSS2_ANTENNA_OFFSET_CORRECTION_TOPIC = "gnss2/antenna_offset_correction";
 static constexpr auto GNSS2_SBAS_INFO_TOPIC = "gnss2/sbas_info";
 static constexpr auto GNSS2_RF_ERROR_DETECTION_TOPIC = "gnss2/rf_error_detection";
 
@@ -54,6 +56,7 @@ static constexpr auto RTK_STATUS_V1_TOPIC = "rtk/status_v1";
 static constexpr auto FILTER_STATUS_TOPIC = "nav/status";
 static constexpr auto FILTER_HEADING_TOPIC = "nav/heading";
 static constexpr auto FILTER_HEADING_STATE_TOPIC = "nav/heading_state";
+static constexpr auto FILTER_NAVSATFIX_TOPIC = "nav/fix";
 static constexpr auto FILTER_ODOM_TOPIC = "nav/odom";
 static constexpr auto FILTER_IMU_DATA_TOPIC = "nav/filtered_imu/data";
 static constexpr auto FILTER_RELATIVE_ODOM_TOPIC = "nav/relative_pos/odom";
