@@ -2,6 +2,11 @@
 Changelog for package microstrain_inertial_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.1.0 (2023-07-25)
+------------------
+* Installs the rqt utils package (`#239 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/239>`_)
+* Contributors: Rob
+
 3.0.1 (2023-02-10)
 ------------------
 
