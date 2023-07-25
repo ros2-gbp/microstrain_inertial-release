@@ -54,6 +54,10 @@ bool Config::configure(RosNodeType* node)
   // General
   getParam<bool>(node, "debug", debug_, false);
 
+  // Reconnect
+  getParam<int>(node, "reconnect_attempts", reconnect_attempts_, 0);
+  getParam<bool>(node, "configure_after_reconnect", configure_after_reconnect_, true);
+
   // Device
   getParam<bool>(node, "use_device_timestamp", use_device_timestamp_, false);
   getParam<bool>(node, "use_ros_time", use_ros_time_, false);
@@ -437,7 +441,7 @@ bool Config::configure3DM(RosNodeType* node)
 
       // Populate the NMEA message config options
       std::vector<mip::commands_3dm::NmeaMessage> formats;
-      if (!populateNmeaMessageFormat(node, "imu_nmea_prkr_data_rate", mip::commands_3dm::NmeaMessage::TalkerID::RESERVED, mip::data_sensor::DESCRIPTOR_SET, mip::commands_3dm::NmeaMessage::MessageID::PRKR, &formats) ||
+      if (!populateNmeaMessageFormat(node, "imu_nmea_prkr_data_rate", mip::commands_3dm::NmeaMessage::TalkerID::IGNORED, mip::data_sensor::DESCRIPTOR_SET, mip::commands_3dm::NmeaMessage::MessageID::PKRR, &formats) ||
           !populateNmeaMessageFormat(node, "gnss1_nmea_gga_data_rate", static_cast<mip::commands_3dm::NmeaMessage::TalkerID>(gnss1_nmea_talker_id), mip::data_gnss::MIP_GNSS1_DATA_DESC_SET, mip::commands_3dm::NmeaMessage::MessageID::GGA, &formats) ||
           !populateNmeaMessageFormat(node, "gnss1_nmea_gll_data_rate", static_cast<mip::commands_3dm::NmeaMessage::TalkerID>(gnss1_nmea_talker_id), mip::data_gnss::MIP_GNSS1_DATA_DESC_SET, mip::commands_3dm::NmeaMessage::MessageID::GLL, &formats) ||
           !populateNmeaMessageFormat(node, "gnss1_nmea_gsv_data_rate", static_cast<mip::commands_3dm::NmeaMessage::TalkerID>(gnss1_nmea_talker_id), mip::data_gnss::MIP_GNSS1_DATA_DESC_SET, mip::commands_3dm::NmeaMessage::MessageID::GSV, &formats) ||
@@ -456,7 +460,7 @@ bool Config::configure3DM(RosNodeType* node)
           !populateNmeaMessageFormat(node, "filter_nmea_gll_data_rate", static_cast<mip::commands_3dm::NmeaMessage::TalkerID>(filter_nmea_talker_id), mip::data_filter::DESCRIPTOR_SET, mip::commands_3dm::NmeaMessage::MessageID::GLL, &formats) ||
           !populateNmeaMessageFormat(node, "filter_nmea_rmc_data_rate", static_cast<mip::commands_3dm::NmeaMessage::TalkerID>(filter_nmea_talker_id), mip::data_filter::DESCRIPTOR_SET, mip::commands_3dm::NmeaMessage::MessageID::RMC, &formats) ||
           !populateNmeaMessageFormat(node, "filter_nmea_hdt_data_rate", static_cast<mip::commands_3dm::NmeaMessage::TalkerID>(filter_nmea_talker_id), mip::data_filter::DESCRIPTOR_SET, mip::commands_3dm::NmeaMessage::MessageID::HDT, &formats) ||
-          !populateNmeaMessageFormat(node, "filter_nmea_prka_data_rate", static_cast<mip::commands_3dm::NmeaMessage::TalkerID>(filter_nmea_talker_id), mip::data_filter::DESCRIPTOR_SET, mip::commands_3dm::NmeaMessage::MessageID::PRKA, &formats))
+          !populateNmeaMessageFormat(node, "filter_nmea_prka_data_rate", static_cast<mip::commands_3dm::NmeaMessage::TalkerID>(filter_nmea_talker_id), mip::data_filter::DESCRIPTOR_SET, mip::commands_3dm::NmeaMessage::MessageID::PKRA, &formats))
         return false;
 
       // Send them to the device
@@ -533,6 +537,7 @@ bool Config::configureFilter(RosNodeType* node)
   std::vector<double> filter_init_velocity_double(3, 0.0);
   std::vector<double> filter_init_attitude_double(3, 0.0);
   int filter_relative_position_frame;
+  int filter_relative_position_source;
   std::vector<double> filter_relative_position_ref_double(3, 0.0);
   std::vector<double> filter_speed_lever_arm_double(3, 0.0);
   double filter_gnss_antenna_cal_max_offset;
@@ -546,6 +551,7 @@ bool Config::configureFilter(RosNodeType* node)
   getParam<std::vector<double>>(node, "filter_init_velocity", filter_init_velocity_double, DEFAULT_VECTOR);
   getParam<std::vector<double>>(node, "filter_init_attitude", filter_init_attitude_double, DEFAULT_VECTOR);
   getParam<int32_t>(node, "filter_relative_position_frame", filter_relative_position_frame, 2);
+  getParam<int32_t>(node, "filter_relative_position_source", filter_relative_position_source, 1);
   getParam<std::vector<double>>(node, "filter_relative_position_ref", filter_relative_position_ref_double, DEFAULT_VECTOR);
   getParam<std::vector<double>>(node, "filter_speed_lever_arm", filter_speed_lever_arm_double, DEFAULT_VECTOR);
   getParam<double>(node, "filter_gnss_antenna_cal_max_offset", filter_gnss_antenna_cal_max_offset, 0.1);
@@ -734,7 +740,7 @@ bool Config::configureFilter(RosNodeType* node)
     {
       MICROSTRAIN_INFO(node_, "Setting relative position to: [%f, %f, %f], ref frame = %d",
           filter_relative_position_ref[0], filter_relative_position_ref[1], filter_relative_position_ref[2], filter_relative_position_frame);
-      if (!(mip_cmd_result = mip::commands_filter::writeRelPosConfiguration(*mip_device_, 1, static_cast<mip::commands_filter::FilterReferenceFrame>(filter_relative_position_frame), filter_relative_position_ref.data())))
+      if (!(mip_cmd_result = mip::commands_filter::writeRelPosConfiguration(*mip_device_, filter_relative_position_source, static_cast<mip::commands_filter::FilterReferenceFrame>(filter_relative_position_frame), filter_relative_position_ref.data())))
       {
         MICROSTRAIN_MIP_SDK_ERROR(node_, mip_cmd_result, "Failed to configure relative position settings");
         return false;
@@ -860,8 +866,8 @@ bool Config::configureFilter(RosNodeType* node)
     {
       MICROSTRAIN_INFO(node_, "Setting sensor to vehicle transformation euler to [%f, %f, %f]", filter_sensor2vehicle_frame_transformation_euler[0],
           filter_sensor2vehicle_frame_transformation_euler[1], filter_sensor2vehicle_frame_transformation_euler[2]);
-      if (!(mip_cmd_result = mip::commands_3dm::writeSensor2VehicleTransformEuler(*mip_device_, -filter_sensor2vehicle_frame_transformation_euler[0],
-          -filter_sensor2vehicle_frame_transformation_euler[1], -filter_sensor2vehicle_frame_transformation_euler[2])))
+      if (!(mip_cmd_result = mip::commands_3dm::writeSensor2VehicleTransformEuler(*mip_device_, filter_sensor2vehicle_frame_transformation_euler[0],
+          filter_sensor2vehicle_frame_transformation_euler[1], filter_sensor2vehicle_frame_transformation_euler[2])))
       {
         MICROSTRAIN_MIP_SDK_ERROR(node_, mip_cmd_result, "Failed to configure sensor to vehicle transformation euler");
         return false;
@@ -932,10 +938,10 @@ bool Config::configureFilter(RosNodeType* node)
     {
       float quaternion[4]
       {
+        filter_sensor2vehicle_frame_transformation_quaternion[3],
         filter_sensor2vehicle_frame_transformation_quaternion[0],
         filter_sensor2vehicle_frame_transformation_quaternion[1],
-        filter_sensor2vehicle_frame_transformation_quaternion[2],
-        filter_sensor2vehicle_frame_transformation_quaternion[3]
+        filter_sensor2vehicle_frame_transformation_quaternion[2]
       };
       MICROSTRAIN_INFO(node_, "Setting sensor to vehicle transformation quaternion to [%f, %f, %f, %f]", quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
       if (!(mip_cmd_result = mip::commands_3dm::writeSensor2VehicleTransformQuaternion(*mip_device_, quaternion)))
@@ -1070,7 +1076,7 @@ bool Config::populateNmeaMessageFormat(RosNodeType* config_node, const std::stri
 
     // If we already have a message format with this talker ID, error or warn depending on config
     // Note that it is TECHNICALLY valid to have multiple configurations for the same NMEA sentence, but I can think of no reason why it would be useful, so we will also error on that
-    if (format.talker_id != mip::commands_3dm::NmeaMessage::TalkerID::RESERVED)
+    if (format.talker_id != mip::commands_3dm::NmeaMessage::TalkerID::IGNORED)
     {
       for (const auto& existing_format : *formats)
       {
