@@ -1,0 +1,12 @@
+Source: ros-iron-microstrain-inertial-examples
+Section: misc
+Priority: optional
+Maintainer: Rob Fisher <rob.fisher@parker.com>
+Build-Depends: debhelper (>= 9.0.0), libsensor-msgs-dev, libstd-msgs-dev, python3-sensor-msgs, python3-std-msgs, ros-iron-ament-cmake, ros-iron-microstrain-inertial-msgs, ros-iron-rclcpp, ros-iron-rclcpp-components, ros-sensor-msgs, ros-std-msgs, ros-iron-ros-workspace
+Homepage: https://github.com/LORD-MicroStrain/microstrain_inertial
+Standards-Version: 3.9.2
+
+Package: ros-iron-microstrain-inertial-examples
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libsensor-msgs-dev, libstd-msgs-dev, python3-sensor-msgs, python3-std-msgs, ros-iron-microstrain-inertial-msgs, ros-iron-rclcpp, ros-iron-rclcpp-components, ros-iron-rclpy, ros-sensor-msgs, ros-std-msgs, ros-iron-ros-workspace
+Description: Example listener for Parker LORD Sensing inertial device driver ros_mscl (C++).
