@@ -1,0 +1,12 @@
+Source: ros-iron-microstrain-inertial-driver
+Section: misc
+Priority: optional
+Maintainer: Rob Fisher <rob.fisher@parker.com>
+Build-Depends: debhelper (>= 9.0.0), curl, git, jq, libcurl4-openssl-dev, libdiagnostic-updater-dev, libgeometry-msgs-dev, libnav-msgs-dev, libsensor-msgs-dev, libstd-msgs-dev, libstd-srvs-dev, libtf2-dev, libtf2-geometry-msgs-dev, libtf2-ros-dev, python3-diagnostic-updater, python3-geometry-msgs, python3-nav-msgs, python3-sensor-msgs, python3-std-msgs, python3-std-srvs, python3-tf2, python3-tf2-geometry-msgs, python3-tf2-ros, ros-environment, ros-geometry-msgs, ros-iron-ament-cmake-gtest, ros-iron-ament-cpplint, ros-iron-lifecycle-msgs, ros-iron-mavros-msgs, ros-iron-microstrain-inertial-msgs, ros-iron-nmea-msgs, ros-iron-rclcpp-lifecycle, ros-iron-rosidl-default-generators, ros-nav-msgs, ros-sensor-msgs, ros-std-msgs, ros-std-srvs, ros-iron-ros-workspace, ros-iron-rosidl-typesupport-fastrtps-c, ros-iron-rosidl-typesupport-fastrtps-cpp
+Homepage: https://github.com/LORD-MicroStrain/microstrain_inertial
+Standards-Version: 3.9.2
+
+Package: ros-iron-microstrain-inertial-driver
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libdiagnostic-aggregator-dev, libdiagnostic-aggregator-tools, libdiagnostic-updater-dev, libgeometry-msgs-dev, libnav-msgs-dev, libsensor-msgs-dev, libstd-msgs-dev, libstd-srvs-dev, libtf2-dev, libtf2-geometry-msgs-dev, libtf2-ros-dev, python3-diagnostic-updater, python3-geometry-msgs, python3-nav-msgs, python3-sensor-msgs, python3-std-msgs, python3-std-srvs, python3-tf2, python3-tf2-geometry-msgs, python3-tf2-ros, ros-geometry-msgs, ros-iron-lifecycle-msgs, ros-iron-mavros-msgs, ros-iron-microstrain-inertial-msgs, ros-iron-nmea-msgs, ros-iron-rclcpp-lifecycle, ros-iron-rosidl-default-runtime, ros-nav-msgs, ros-sensor-msgs, ros-std-msgs, ros-std-srvs, ros-iron-ros-workspace
+Description: The ros_mscl package provides a driver for the LORD/Microstrain inertial products.
