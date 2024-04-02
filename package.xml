@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>microstrain_inertial_driver</name>
-  <version>3.2.1</version>
+  <version>4.1.0</version>
   <description>The ros_mscl package provides a driver for the LORD/Microstrain inertial products.</description>
   <author>Brian Bingham</author>
   <author>Parker Hannifin Corp</author>
@@ -29,10 +29,14 @@
   <depend>sensor_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>nmea_msgs</depend>
-  <depend>mavros_msgs</depend>
+  <depend>rtcm_msgs</depend>
   <depend>microstrain_inertial_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>lifecycle_msgs</depend>
+
+  <!-- Static or header only library deps -->
+  <build_depend>eigen</build_depend>
+  <build_depend>geographiclib</build_depend>
   
   <build_depend>rclcpp_lifecycle</build_depend>
   <member_of_group>rosidl_interface_packages</member_of_group>
