@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common.h"
 #include "descriptors.h"
 #include "../mip_result.h"
 
@@ -175,16 +176,6 @@ static const uint32_t GNSS_SV_INFO_MAX_SV_NUMBER = 32;
 
 struct PosLlh
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_POSITION_LLH;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(latitude,longitude,ellipsoid_height,msl_height,horizontal_accuracy,vertical_accuracy,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -233,9 +224,23 @@ struct PosLlh
     float vertical_accuracy = 0; ///< [meters]
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_POSITION_LLH;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(latitude,longitude,ellipsoid_height,msl_height,horizontal_accuracy,vertical_accuracy,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(latitude),std::ref(longitude),std::ref(ellipsoid_height),std::ref(msl_height),std::ref(horizontal_accuracy),std::ref(vertical_accuracy),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const PosLlh& self);
 void extract(Serializer& serializer, PosLlh& self);
+
 
 ///@}
 ///
@@ -247,16 +252,6 @@ void extract(Serializer& serializer, PosLlh& self);
 
 struct PosEcef
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_POSITION_ECEF;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(x[0],x[1],x[2],x_accuracy,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -288,13 +283,27 @@ struct PosEcef
         void setAll() { value |= ALL; }
     };
     
-    double x[3] = {0}; ///< [meters]
+    Vector3d x; ///< [meters]
     float x_accuracy = 0; ///< [meters]
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_POSITION_ECEF;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(x[0],x[1],x[2],x_accuracy,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(x[0]),std::ref(x[1]),std::ref(x[2]),std::ref(x_accuracy),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const PosEcef& self);
 void extract(Serializer& serializer, PosEcef& self);
+
 
 ///@}
 ///
@@ -306,16 +315,6 @@ void extract(Serializer& serializer, PosEcef& self);
 
 struct VelNed
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_VELOCITY_NED;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(v[0],v[1],v[2],speed,ground_speed,heading,speed_accuracy,heading_accuracy,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -359,7 +358,7 @@ struct VelNed
         void setAll() { value |= ALL; }
     };
     
-    float v[3] = {0}; ///< [meters/second]
+    Vector3f v; ///< [meters/second]
     float speed = 0; ///< [meters/second]
     float ground_speed = 0; ///< [meters/second]
     float heading = 0; ///< [degrees]
@@ -367,9 +366,23 @@ struct VelNed
     float heading_accuracy = 0; ///< [degrees]
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_VELOCITY_NED;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(v[0],v[1],v[2],speed,ground_speed,heading,speed_accuracy,heading_accuracy,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(v[0]),std::ref(v[1]),std::ref(v[2]),std::ref(speed),std::ref(ground_speed),std::ref(heading),std::ref(speed_accuracy),std::ref(heading_accuracy),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const VelNed& self);
 void extract(Serializer& serializer, VelNed& self);
+
 
 ///@}
 ///
@@ -381,16 +394,6 @@ void extract(Serializer& serializer, VelNed& self);
 
 struct VelEcef
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_VELOCITY_ECEF;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(v[0],v[1],v[2],v_accuracy,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -422,13 +425,27 @@ struct VelEcef
         void setAll() { value |= ALL; }
     };
     
-    float v[3] = {0}; ///< [meters/second]
+    Vector3f v; ///< [meters/second]
     float v_accuracy = 0; ///< [meters/second]
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_VELOCITY_ECEF;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(v[0],v[1],v[2],v_accuracy,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(v[0]),std::ref(v[1]),std::ref(v[2]),std::ref(v_accuracy),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const VelEcef& self);
 void extract(Serializer& serializer, VelEcef& self);
+
 
 ///@}
 ///
@@ -440,16 +457,6 @@ void extract(Serializer& serializer, VelEcef& self);
 
 struct Dop
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_DOP;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(gdop,pdop,hdop,vdop,tdop,ndop,edop,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -505,9 +512,23 @@ struct Dop
     float edop = 0; ///< Easting DOP
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_DOP;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(gdop,pdop,hdop,vdop,tdop,ndop,edop,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(gdop),std::ref(pdop),std::ref(hdop),std::ref(vdop),std::ref(tdop),std::ref(ndop),std::ref(edop),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const Dop& self);
 void extract(Serializer& serializer, Dop& self);
+
 
 ///@}
 ///
@@ -519,16 +540,6 @@ void extract(Serializer& serializer, Dop& self);
 
 struct UtcTime
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_UTC_TIME;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(year,month,day,hour,min,sec,msec,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -569,9 +580,23 @@ struct UtcTime
     uint32_t msec = 0; ///< [Milliseconds]
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_UTC_TIME;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(year,month,day,hour,min,sec,msec,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(year),std::ref(month),std::ref(day),std::ref(hour),std::ref(min),std::ref(sec),std::ref(msec),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const UtcTime& self);
 void extract(Serializer& serializer, UtcTime& self);
+
 
 ///@}
 ///
@@ -583,16 +608,6 @@ void extract(Serializer& serializer, UtcTime& self);
 
 struct GpsTime
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GPS_TIME;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(tow,week_number,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -628,9 +643,23 @@ struct GpsTime
     uint16_t week_number = 0; ///< GPS Week since 1980 [weeks]
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GPS_TIME;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(tow,week_number,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(tow),std::ref(week_number),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const GpsTime& self);
 void extract(Serializer& serializer, GpsTime& self);
+
 
 ///@}
 ///
@@ -642,16 +671,6 @@ void extract(Serializer& serializer, GpsTime& self);
 
 struct ClockInfo
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_CLOCK_INFO;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(bias,drift,accuracy_estimate,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -691,9 +710,23 @@ struct ClockInfo
     double accuracy_estimate = 0; ///< [seconds]
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_CLOCK_INFO;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(bias,drift,accuracy_estimate,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(bias),std::ref(drift),std::ref(accuracy_estimate),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const ClockInfo& self);
 void extract(Serializer& serializer, ClockInfo& self);
+
 
 ///@}
 ///
@@ -705,16 +738,6 @@ void extract(Serializer& serializer, ClockInfo& self);
 
 struct FixInfo
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_FIX_INFO;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(fix_type,num_sv,fix_flags,valid_flags);
-    }
-    
     enum class FixType : uint8_t
     {
         FIX_3D        = 0,  ///<  
@@ -793,9 +816,23 @@ struct FixInfo
     FixFlags fix_flags;
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_FIX_INFO;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(fix_type,num_sv,fix_flags,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(fix_type),std::ref(num_sv),std::ref(fix_flags),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const FixInfo& self);
 void extract(Serializer& serializer, FixInfo& self);
+
 
 ///@}
 ///
@@ -809,16 +846,6 @@ void extract(Serializer& serializer, FixInfo& self);
 
 struct SvInfo
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_SV_INFO;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(channel,sv_id,carrier_noise_ratio,azimuth,elevation,sv_flags,valid_flags);
-    }
-    
     struct SVFlags : Bitfield<SVFlags>
     {
         enum _enumType : uint16_t
@@ -898,9 +925,23 @@ struct SvInfo
     SVFlags sv_flags;
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_SV_INFO;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(channel,sv_id,carrier_noise_ratio,azimuth,elevation,sv_flags,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(channel),std::ref(sv_id),std::ref(carrier_noise_ratio),std::ref(azimuth),std::ref(elevation),std::ref(sv_flags),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const SvInfo& self);
 void extract(Serializer& serializer, SvInfo& self);
+
 
 ///@}
 ///
@@ -912,16 +953,6 @@ void extract(Serializer& serializer, SvInfo& self);
 
 struct HwStatus
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_HW_STATUS;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(receiver_state,antenna_state,antenna_power,valid_flags);
-    }
-    
     enum class ReceiverState : uint8_t
     {
         OFF     = 0,  ///<  
@@ -984,9 +1015,23 @@ struct HwStatus
     AntennaPower antenna_power = static_cast<AntennaPower>(0);
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_HW_STATUS;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(receiver_state,antenna_state,antenna_power,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(receiver_state),std::ref(antenna_state),std::ref(antenna_power),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const HwStatus& self);
 void extract(Serializer& serializer, HwStatus& self);
+
 
 ///@}
 ///
@@ -1010,16 +1055,6 @@ void extract(Serializer& serializer, HwStatus& self);
 
 struct DgpsInfo
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_DGPS_INFO;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(sv_id,age,range_correction,range_rate_correction,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -1063,9 +1098,23 @@ struct DgpsInfo
     float range_rate_correction = 0;
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_DGPS_INFO;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(sv_id,age,range_correction,range_rate_correction,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(sv_id),std::ref(age),std::ref(range_correction),std::ref(range_rate_correction),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const DgpsInfo& self);
 void extract(Serializer& serializer, DgpsInfo& self);
+
 
 ///@}
 ///
@@ -1079,16 +1128,6 @@ void extract(Serializer& serializer, DgpsInfo& self);
 
 struct DgpsChannel
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_DGPS_CHANNEL_STATUS;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(sv_id,age,range_correction,range_rate_correction,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -1132,9 +1171,23 @@ struct DgpsChannel
     float range_rate_correction = 0; ///< [m/s]
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_DGPS_CHANNEL_STATUS;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(sv_id,age,range_correction,range_rate_correction,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(sv_id),std::ref(age),std::ref(range_correction),std::ref(range_rate_correction),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const DgpsChannel& self);
 void extract(Serializer& serializer, DgpsChannel& self);
+
 
 ///@}
 ///
@@ -1148,16 +1201,6 @@ void extract(Serializer& serializer, DgpsChannel& self);
 
 struct ClockInfo2
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_CLOCK_INFO_2;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(bias,drift,bias_accuracy_estimate,drift_accuracy_estimate,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -1201,9 +1244,23 @@ struct ClockInfo2
     double drift_accuracy_estimate = 0;
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_CLOCK_INFO_2;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(bias,drift,bias_accuracy_estimate,drift_accuracy_estimate,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(bias),std::ref(drift),std::ref(bias_accuracy_estimate),std::ref(drift_accuracy_estimate),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const ClockInfo2& self);
 void extract(Serializer& serializer, ClockInfo2& self);
+
 
 ///@}
 ///
@@ -1215,16 +1272,6 @@ void extract(Serializer& serializer, ClockInfo2& self);
 
 struct GpsLeapSeconds
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GPS_LEAP_SECONDS;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(leap_seconds,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -1253,9 +1300,23 @@ struct GpsLeapSeconds
     uint8_t leap_seconds = 0; ///< [s]
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GPS_LEAP_SECONDS;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(leap_seconds,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(leap_seconds),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const GpsLeapSeconds& self);
 void extract(Serializer& serializer, GpsLeapSeconds& self);
+
 
 ///@}
 ///
@@ -1267,16 +1328,6 @@ void extract(Serializer& serializer, GpsLeapSeconds& self);
 
 struct SbasInfo
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_SBAS_INFO;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(time_of_week,week_number,sbas_system,sbas_id,count,sbas_status,valid_flags);
-    }
-    
     struct SbasStatus : Bitfield<SbasStatus>
     {
         enum _enumType : uint8_t
@@ -1362,9 +1413,23 @@ struct SbasInfo
     SbasStatus sbas_status; ///< Status of the SBAS service
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_SBAS_INFO;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(time_of_week,week_number,sbas_system,sbas_id,count,sbas_status,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(time_of_week),std::ref(week_number),std::ref(sbas_system),std::ref(sbas_id),std::ref(count),std::ref(sbas_status),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const SbasInfo& self);
 void extract(Serializer& serializer, SbasInfo& self);
+
 
 ///@}
 ///
@@ -1398,16 +1463,6 @@ void extract(Serializer& serializer, SbasInfo& self);
 
 struct SbasCorrection
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_SBAS_CORRECTION;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(index,count,time_of_week,week_number,gnss_id,sv_id,udrei,pseudorange_correction,iono_correction,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -1453,9 +1508,23 @@ struct SbasCorrection
     float iono_correction = 0; ///< Ionospheric correction [meters].
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_SBAS_CORRECTION;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(index,count,time_of_week,week_number,gnss_id,sv_id,udrei,pseudorange_correction,iono_correction,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(index),std::ref(count),std::ref(time_of_week),std::ref(week_number),std::ref(gnss_id),std::ref(sv_id),std::ref(udrei),std::ref(pseudorange_correction),std::ref(iono_correction),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const SbasCorrection& self);
 void extract(Serializer& serializer, SbasCorrection& self);
+
 
 ///@}
 ///
@@ -1467,16 +1536,6 @@ void extract(Serializer& serializer, SbasCorrection& self);
 
 struct RfErrorDetection
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_RF_ERROR_DETECTION;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(rf_band,jamming_state,spoofing_state,reserved,valid_flags);
-    }
-    
     enum class RFBand : uint8_t
     {
         UNKNOWN = 0,  ///<  
@@ -1541,9 +1600,23 @@ struct RfErrorDetection
     uint8_t reserved[4] = {0}; ///< Reserved for future use
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_RF_ERROR_DETECTION;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(rf_band,jamming_state,spoofing_state,reserved,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(rf_band),std::ref(jamming_state),std::ref(spoofing_state),std::ref(reserved),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const RfErrorDetection& self);
 void extract(Serializer& serializer, RfErrorDetection& self);
+
 
 ///@}
 ///
@@ -1557,16 +1630,6 @@ void extract(Serializer& serializer, RfErrorDetection& self);
 
 struct BaseStationInfo
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_BASE_STATION_INFO;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(time_of_week,week_number,ecef_pos[0],ecef_pos[1],ecef_pos[2],height,station_id,indicators,valid_flags);
-    }
-    
     struct IndicatorFlags : Bitfield<IndicatorFlags>
     {
         enum _enumType : uint16_t
@@ -1661,15 +1724,29 @@ struct BaseStationInfo
     
     double time_of_week = 0; ///< GPS Time of week the message was received [seconds]
     uint16_t week_number = 0; ///< GPS Week since 1980 [weeks]
-    double ecef_pos[3] = {0}; ///< Earth-centered, Earth-fixed [m]
+    Vector3d ecef_pos; ///< Earth-centered, Earth-fixed [m]
     float height = 0; ///< Antenna Height above the marker used in the survey [m]
     uint16_t station_id = 0; ///< Range: 0-4095
     IndicatorFlags indicators; ///< Bitfield
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_BASE_STATION_INFO;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(time_of_week,week_number,ecef_pos[0],ecef_pos[1],ecef_pos[2],height,station_id,indicators,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(time_of_week),std::ref(week_number),std::ref(ecef_pos[0]),std::ref(ecef_pos[1]),std::ref(ecef_pos[2]),std::ref(height),std::ref(station_id),std::ref(indicators),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const BaseStationInfo& self);
 void extract(Serializer& serializer, BaseStationInfo& self);
+
 
 ///@}
 ///
@@ -1680,16 +1757,6 @@ void extract(Serializer& serializer, BaseStationInfo& self);
 
 struct RtkCorrectionsStatus
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_RTK_CORRECTIONS_STATUS;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(time_of_week,week_number,epoch_status,dongle_status,gps_correction_latency,glonass_correction_latency,galileo_correction_latency,beidou_correction_latency,reserved[0],reserved[1],reserved[2],reserved[3],valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -1799,9 +1866,23 @@ struct RtkCorrectionsStatus
     uint32_t reserved[4] = {0}; ///< Reserved for future use
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_RTK_CORRECTIONS_STATUS;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(time_of_week,week_number,epoch_status,dongle_status,gps_correction_latency,glonass_correction_latency,galileo_correction_latency,beidou_correction_latency,reserved,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(time_of_week),std::ref(week_number),std::ref(epoch_status),std::ref(dongle_status),std::ref(gps_correction_latency),std::ref(glonass_correction_latency),std::ref(galileo_correction_latency),std::ref(beidou_correction_latency),std::ref(reserved),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const RtkCorrectionsStatus& self);
 void extract(Serializer& serializer, RtkCorrectionsStatus& self);
+
 
 ///@}
 ///
@@ -1813,16 +1894,6 @@ void extract(Serializer& serializer, RtkCorrectionsStatus& self);
 
 struct SatelliteStatus
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_SATELLITE_STATUS;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(index,count,time_of_week,week_number,gnss_id,satellite_id,elevation,azimuth,health,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -1880,9 +1951,23 @@ struct SatelliteStatus
     bool health = 0; ///< True if the satellite is healthy.
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_SATELLITE_STATUS;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(index,count,time_of_week,week_number,gnss_id,satellite_id,elevation,azimuth,health,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(index),std::ref(count),std::ref(time_of_week),std::ref(week_number),std::ref(gnss_id),std::ref(satellite_id),std::ref(elevation),std::ref(azimuth),std::ref(health),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const SatelliteStatus& self);
 void extract(Serializer& serializer, SatelliteStatus& self);
+
 
 ///@}
 ///
@@ -1894,16 +1979,6 @@ void extract(Serializer& serializer, SatelliteStatus& self);
 
 struct Raw
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_RAW;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(index,count,time_of_week,week_number,receiver_id,tracking_channel,gnss_id,satellite_id,signal_id,signal_strength,quality,pseudorange,carrier_phase,doppler,range_uncert,phase_uncert,doppler_uncert,lock_time,valid_flags);
-    }
-    
     enum class GnssSignalQuality : uint8_t
     {
         NONE         = 0,  ///<  
@@ -2007,9 +2082,23 @@ struct Raw
     float lock_time = 0; ///< DOC Minimum carrier phase lock time [s].  Note: the maximum value is dependent on the receiver.
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_RAW;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(index,count,time_of_week,week_number,receiver_id,tracking_channel,gnss_id,satellite_id,signal_id,signal_strength,quality,pseudorange,carrier_phase,doppler,range_uncert,phase_uncert,doppler_uncert,lock_time,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(index),std::ref(count),std::ref(time_of_week),std::ref(week_number),std::ref(receiver_id),std::ref(tracking_channel),std::ref(gnss_id),std::ref(satellite_id),std::ref(signal_id),std::ref(signal_strength),std::ref(quality),std::ref(pseudorange),std::ref(carrier_phase),std::ref(doppler),std::ref(range_uncert),std::ref(phase_uncert),std::ref(doppler_uncert),std::ref(lock_time),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const Raw& self);
 void extract(Serializer& serializer, Raw& self);
+
 
 ///@}
 ///
@@ -2021,16 +2110,6 @@ void extract(Serializer& serializer, Raw& self);
 
 struct GpsEphemeris
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GPS_EPHEMERIS;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(index,count,time_of_week,week_number,satellite_id,health,iodc,iode,t_oc,af0,af1,af2,t_gd,ISC_L1CA,ISC_L2C,t_oe,a,a_dot,mean_anomaly,delta_mean_motion,delta_mean_motion_dot,eccentricity,argument_of_perigee,omega,omega_dot,inclination,inclination_dot,c_ic,c_is,c_uc,c_us,c_rc,c_rs,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -2097,9 +2176,23 @@ struct GpsEphemeris
     double c_rs = 0; ///< Harmonic Correction Term.
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GPS_EPHEMERIS;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(index,count,time_of_week,week_number,satellite_id,health,iodc,iode,t_oc,af0,af1,af2,t_gd,ISC_L1CA,ISC_L2C,t_oe,a,a_dot,mean_anomaly,delta_mean_motion,delta_mean_motion_dot,eccentricity,argument_of_perigee,omega,omega_dot,inclination,inclination_dot,c_ic,c_is,c_uc,c_us,c_rc,c_rs,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(index),std::ref(count),std::ref(time_of_week),std::ref(week_number),std::ref(satellite_id),std::ref(health),std::ref(iodc),std::ref(iode),std::ref(t_oc),std::ref(af0),std::ref(af1),std::ref(af2),std::ref(t_gd),std::ref(ISC_L1CA),std::ref(ISC_L2C),std::ref(t_oe),std::ref(a),std::ref(a_dot),std::ref(mean_anomaly),std::ref(delta_mean_motion),std::ref(delta_mean_motion_dot),std::ref(eccentricity),std::ref(argument_of_perigee),std::ref(omega),std::ref(omega_dot),std::ref(inclination),std::ref(inclination_dot),std::ref(c_ic),std::ref(c_is),std::ref(c_uc),std::ref(c_us),std::ref(c_rc),std::ref(c_rs),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const GpsEphemeris& self);
 void extract(Serializer& serializer, GpsEphemeris& self);
+
 
 ///@}
 ///
@@ -2111,16 +2204,6 @@ void extract(Serializer& serializer, GpsEphemeris& self);
 
 struct GalileoEphemeris
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GALILEO_EPHEMERIS;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(index,count,time_of_week,week_number,satellite_id,health,iodc,iode,t_oc,af0,af1,af2,t_gd,ISC_L1CA,ISC_L2C,t_oe,a,a_dot,mean_anomaly,delta_mean_motion,delta_mean_motion_dot,eccentricity,argument_of_perigee,omega,omega_dot,inclination,inclination_dot,c_ic,c_is,c_uc,c_us,c_rc,c_rs,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -2187,9 +2270,23 @@ struct GalileoEphemeris
     double c_rs = 0; ///< Harmonic Correction Term.
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GALILEO_EPHEMERIS;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(index,count,time_of_week,week_number,satellite_id,health,iodc,iode,t_oc,af0,af1,af2,t_gd,ISC_L1CA,ISC_L2C,t_oe,a,a_dot,mean_anomaly,delta_mean_motion,delta_mean_motion_dot,eccentricity,argument_of_perigee,omega,omega_dot,inclination,inclination_dot,c_ic,c_is,c_uc,c_us,c_rc,c_rs,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(index),std::ref(count),std::ref(time_of_week),std::ref(week_number),std::ref(satellite_id),std::ref(health),std::ref(iodc),std::ref(iode),std::ref(t_oc),std::ref(af0),std::ref(af1),std::ref(af2),std::ref(t_gd),std::ref(ISC_L1CA),std::ref(ISC_L2C),std::ref(t_oe),std::ref(a),std::ref(a_dot),std::ref(mean_anomaly),std::ref(delta_mean_motion),std::ref(delta_mean_motion_dot),std::ref(eccentricity),std::ref(argument_of_perigee),std::ref(omega),std::ref(omega_dot),std::ref(inclination),std::ref(inclination_dot),std::ref(c_ic),std::ref(c_is),std::ref(c_uc),std::ref(c_us),std::ref(c_rc),std::ref(c_rs),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const GalileoEphemeris& self);
 void extract(Serializer& serializer, GalileoEphemeris& self);
+
 
 ///@}
 ///
@@ -2201,16 +2298,6 @@ void extract(Serializer& serializer, GalileoEphemeris& self);
 
 struct GloEphemeris
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GLONASS_EPHEMERIS;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(index,count,time_of_week,week_number,satellite_id,freq_number,tk,tb,sat_type,gamma,tau_n,x[0],x[1],x[2],v[0],v[1],v[2],a[0],a[1],a[2],health,P,NT,delta_tau_n,Ft,En,P1,P2,P3,P4,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -2250,9 +2337,9 @@ struct GloEphemeris
     uint8_t sat_type = 0; ///< Type of satellite (M) GLONASS = 0, GLONASS-M = 1
     double gamma = 0; ///< Relative deviation of carrier frequency from nominal [dimensionless]
     double tau_n = 0; ///< Time correction relative to GLONASS Time [seconds]
-    double x[3] = {0}; ///< Satellite PE-90 position [m]
-    float v[3] = {0}; ///< Satellite PE-90 velocity [m/s]
-    float a[3] = {0}; ///< Satellite PE-90 acceleration due to perturbations [m/s^2]
+    Vector3d x; ///< Satellite PE-90 position [m]
+    Vector3f v; ///< Satellite PE-90 velocity [m/s]
+    Vector3f a; ///< Satellite PE-90 acceleration due to perturbations [m/s^2]
     uint8_t health = 0; ///< Satellite Health (Bn), Non-zero indicates satellite malfunction
     uint8_t P = 0; ///< Satellite operation mode (See GLONASS ICD)
     uint8_t NT = 0; ///< Day number within a 4 year period.
@@ -2265,9 +2352,23 @@ struct GloEphemeris
     uint8_t P4 = 0; ///< Flag indicating ephemeris parameters are present
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GLONASS_EPHEMERIS;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(index,count,time_of_week,week_number,satellite_id,freq_number,tk,tb,sat_type,gamma,tau_n,x[0],x[1],x[2],v[0],v[1],v[2],a[0],a[1],a[2],health,P,NT,delta_tau_n,Ft,En,P1,P2,P3,P4,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(index),std::ref(count),std::ref(time_of_week),std::ref(week_number),std::ref(satellite_id),std::ref(freq_number),std::ref(tk),std::ref(tb),std::ref(sat_type),std::ref(gamma),std::ref(tau_n),std::ref(x[0]),std::ref(x[1]),std::ref(x[2]),std::ref(v[0]),std::ref(v[1]),std::ref(v[2]),std::ref(a[0]),std::ref(a[1]),std::ref(a[2]),std::ref(health),std::ref(P),std::ref(NT),std::ref(delta_tau_n),std::ref(Ft),std::ref(En),std::ref(P1),std::ref(P2),std::ref(P3),std::ref(P4),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const GloEphemeris& self);
 void extract(Serializer& serializer, GloEphemeris& self);
+
 
 ///@}
 ///
@@ -2279,16 +2380,6 @@ void extract(Serializer& serializer, GloEphemeris& self);
 
 struct GpsIonoCorr
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GPS_IONO_CORR;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(time_of_week,week_number,alpha[0],alpha[1],alpha[2],alpha[3],beta[0],beta[1],beta[2],beta[3],valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -2332,9 +2423,23 @@ struct GpsIonoCorr
     double beta[4] = {0}; ///< Ionospheric Correction Terms.
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GPS_IONO_CORR;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(time_of_week,week_number,alpha,beta,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(time_of_week),std::ref(week_number),std::ref(alpha),std::ref(beta),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const GpsIonoCorr& self);
 void extract(Serializer& serializer, GpsIonoCorr& self);
+
 
 ///@}
 ///
@@ -2346,16 +2451,6 @@ void extract(Serializer& serializer, GpsIonoCorr& self);
 
 struct GalileoIonoCorr
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GALILEO_IONO_CORR;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
-    auto as_tuple() const
-    {
-        return std::make_tuple(time_of_week,week_number,alpha[0],alpha[1],alpha[2],disturbance_flags,valid_flags);
-    }
-    
     struct ValidFlags : Bitfield<ValidFlags>
     {
         enum _enumType : uint16_t
@@ -2395,13 +2490,27 @@ struct GalileoIonoCorr
     
     double time_of_week = 0; ///< GPS Time of week [seconds]
     uint16_t week_number = 0; ///< GPS Week since 1980 [weeks]
-    double alpha[3] = {0}; ///< Coefficients for the model.
+    Vector3d alpha; ///< Coefficients for the model.
     uint8_t disturbance_flags = 0; ///< Region disturbance flags (bits 1-5).
     ValidFlags valid_flags;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::data_gnss::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::data_gnss::DATA_GALILEO_IONO_CORR;
+    
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(time_of_week,week_number,alpha[0],alpha[1],alpha[2],disturbance_flags,valid_flags);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(time_of_week),std::ref(week_number),std::ref(alpha[0]),std::ref(alpha[1]),std::ref(alpha[2]),std::ref(disturbance_flags),std::ref(valid_flags));
+    }
 };
 void insert(Serializer& serializer, const GalileoIonoCorr& self);
 void extract(Serializer& serializer, GalileoIonoCorr& self);
+
 
 ///@}
 ///
