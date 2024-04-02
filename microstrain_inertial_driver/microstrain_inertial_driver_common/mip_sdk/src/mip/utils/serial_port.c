@@ -3,6 +3,14 @@
 
 #include "serial_port.h"
 
+#if defined WIN32
+#include <stdlib.h>
+#include <ctype.h>
+#elif defined __APPLE__
+#include <IOKit/serial/ioss.h>
+#endif
+
+
 #define COM_PORT_BUFFER_SIZE  0x200
 
 #ifndef WIN32 //Unix only
@@ -72,26 +80,59 @@ bool serial_port_open(serial_port *port, const char *port_str, int baudrate)
     BOOL   ready;
     DCB    dcb;
 
+    // Prepend '\\.\' to the com port if not already present.
+    bool added_prefix = false;
+    const char* tmp_port_str = port_str;
+    size_t port_str_len = strlen(port_str);
+
+    // Only prepend if port_str is of the form 'COMx'
+    if(port_str_len >= 4 && toupper(port_str[0]) == 'C' && toupper(port_str[1]) == 'O' && toupper(port_str[2]) == 'M' && isdigit(port_str[3]))
+    {
+        char* tmp = (char*)malloc(port_str_len + 4 + 1);
+        if (!tmp)
+            return false;
+
+        tmp[0] = '\\';
+        tmp[1] = '\\';
+        tmp[2] = '.';
+        tmp[3] = '\\';
+        memcpy(&tmp[4], port_str, port_str_len+1);
+
+        added_prefix = true;
+        tmp_port_str = tmp;
+    }
+
     //Connect to the provided com port
-    port->handle = CreateFile(port_str, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    port->handle = CreateFile(tmp_port_str, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+    // Ensure that the free() call in the following 'if' block doesn't clobber an error value
+    DWORD last_error = GetLastError();
+
+    // If the port string was modified
+    if (added_prefix)
+    {
+        free(tmp_port_str);
+        tmp_port_str = NULL;
+    }
 
     //Check for an invalid handle
     if(port->handle == INVALID_HANDLE_VALUE)
     {
-        MIP_LOG_ERROR("Unable to open com port (%d)\n", GetLastError());
+        MIP_LOG_ERROR("Unable to open com port (%d)\n", last_error);
         return false;
     }
 
     //Setup the com port buffer sizes
     if(SetupComm(port->handle, COM_PORT_BUFFER_SIZE, COM_PORT_BUFFER_SIZE) == 0)
     {
-        MIP_LOG_ERROR("Unable to setup com port buffer size (%d)\n", GetLastError());
+        MIP_LOG_ERROR("Unable to setup com port buffer size (%d)\n", last_error);
         CloseHandle(port->handle);
         port->handle = INVALID_HANDLE_VALUE;
         return false;
     }
 
     //Set the timeouts
+
     COMMTIMEOUTS timeouts;
     GetCommTimeouts(port->handle, &timeouts);
 
@@ -135,9 +176,14 @@ bool serial_port_open(serial_port *port, const char *port_str, int baudrate)
     }
 
 #else //Linux
-
+    
+#ifdef __APPLE__
+    port->handle = open(port_str, O_RDWR | O_NOCTTY | O_NDELAY);
+#else
     port->handle = open(port_str, O_RDWR | O_NOCTTY | O_SYNC);
-
+#endif
+    
+    
     if (port->handle < 0)
     {
         MIP_LOG_ERROR("Unable to open port (%d): %s\n", errno, strerror(errno));
@@ -159,6 +205,7 @@ bool serial_port_open(serial_port *port, const char *port_str, int baudrate)
         return false;
     }
 
+#ifndef __APPLE__
     if (cfsetispeed(&serial_port_settings, baud_rate_to_speed(baudrate)) < 0 || cfsetospeed(&serial_port_settings, baud_rate_to_speed(baudrate)) < 0)
     {
         MIP_LOG_ERROR("Unable to set baud rate (%d): %s\n", errno, strerror(errno));
@@ -166,6 +213,7 @@ bool serial_port_open(serial_port *port, const char *port_str, int baudrate)
         port->handle = -1;
         return false;
     }
+#endif
 
     // Other serial settings to match MSCL
     serial_port_settings.c_cflag |= (tcflag_t)(CLOCAL | CREAD);
@@ -186,6 +234,18 @@ bool serial_port_open(serial_port *port, const char *port_str, int baudrate)
         return false;
     }
 
+
+#ifdef __APPLE__
+    speed_t speed = baudrate;
+    if (ioctl(port->handle, IOSSIOSPEED, &speed) < 0) 
+    {
+        MIP_LOG_ERROR("Unable to set baud rate (%d): %s\n", errno, strerror(errno));
+        close(port->handle);
+        port->handle = -1;
+        return false;
+    }
+#endif
+
     // Flush any waiting data
     tcflush(port->handle, TCIOFLUSH);
 
@@ -203,7 +263,7 @@ bool serial_port_close(serial_port *port)
 #ifdef WIN32 //Windows
     //Close the serial port
     CloseHandle(port->handle);
-#else //Linux
+#else //Linux & Mac
     close(port->handle);
 #endif
     port->handle = INVALID_HANDLE_VALUE;
@@ -254,13 +314,19 @@ bool serial_port_read(serial_port *port, void *buffer, size_t num_bytes, int wai
     if(!serial_port_is_open(port))
         return false;
 
+    uint32_t bytes_available = serial_port_read_count(port);
+
 #ifdef WIN32 //Windows
 
     if( wait_time <= 0 )
     {
-        if( serial_port_read_count(port) == 0 )
+        if(bytes_available == 0 )
             return true;
     }
+
+    //Don't let windows block on the read
+    if(bytes_available < num_bytes)
+        num_bytes = (bytes_available > 0) ? bytes_available : 1;
 
     DWORD  local_bytes_read;
 
@@ -280,7 +346,13 @@ bool serial_port_read(serial_port *port, void *buffer, size_t num_bytes, int wai
         MIP_LOG_ERROR("Failed to poll serial port (%d): %s\n", errno, strerror(errno));
         return false;
     }
-    else if (poll_fd.revents & POLLERR || poll_fd.revents & POLLHUP || poll_fd.revents & POLLNVAL)
+    else if (poll_fd.revents & POLLHUP)
+    {
+        MIP_LOG_ERROR("Poll encountered HUP, closing device");
+        serial_port_close(port);
+        return false;
+    }
+    else if (poll_fd.revents & POLLERR || poll_fd.revents & POLLNVAL)
     {
         MIP_LOG_ERROR("Poll encountered error\n");
         return false;
@@ -331,7 +403,7 @@ uint32_t serial_port_read_count(serial_port *port)
     return 0;
 }
 
-bool serial_port_is_open(serial_port *port)
+bool serial_port_is_open(const serial_port *port)
 {
 #ifdef WIN32
     return port->handle != INVALID_HANDLE_VALUE;
