@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common.h"
 #include "descriptors.h"
 #include "../mip_result.h"
 
@@ -84,11 +85,6 @@ enum class LedAction : uint8_t
 
 struct GetStatusFlags
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_GET_STATUS_FLAGS;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
     struct StatusFlagsLegacy : Bitfield<StatusFlagsLegacy>
     {
         enum _enumType : uint32_t
@@ -203,13 +199,36 @@ struct GetStatusFlags
     };
     
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_GET_STATUS_FLAGS;
+    
+    static const bool HAS_FUNCTION_SELECTOR = false;
+    static const uint32_t ECHOED_PARAMS  = 0x0000;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple();
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple();
+    }
     struct Response
     {
         static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
         static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::REPLY_GET_STATUS_FLAGS;
         
+        static const uint32_t ECHOED_PARAMS  = 0x0000;
+        static const uint32_t COUNTER_PARAMS = 0x00000000;
         StatusFlags flags; ///< Model number dependent. See above structures.
         
+        
+        auto as_tuple()
+        {
+            return std::make_tuple(std::ref(flags));
+        }
     };
 };
 void insert(Serializer& serializer, const GetStatusFlags& self);
@@ -219,6 +238,7 @@ void insert(Serializer& serializer, const GetStatusFlags::Response& self);
 void extract(Serializer& serializer, GetStatusFlags::Response& self);
 
 CmdResult getStatusFlags(C::mip_interface& device, GetStatusFlags::StatusFlags* flagsOut);
+
 ///@}
 ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -228,19 +248,37 @@ CmdResult getStatusFlags(C::mip_interface& device, GetStatusFlags::StatusFlags* 
 
 struct GetImei
 {
+    
     static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
     static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_GET_IMEI;
     
     static const bool HAS_FUNCTION_SELECTOR = false;
+    static const uint32_t ECHOED_PARAMS  = 0x0000;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
     
+    auto as_tuple() const
+    {
+        return std::make_tuple();
+    }
     
+    auto as_tuple()
+    {
+        return std::make_tuple();
+    }
     struct Response
     {
         static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
         static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::REPLY_GET_IMEI;
         
+        static const uint32_t ECHOED_PARAMS  = 0x0000;
+        static const uint32_t COUNTER_PARAMS = 0x00000000;
         char IMEI[32] = {0};
         
+        
+        auto as_tuple()
+        {
+            return std::make_tuple(std::ref(IMEI));
+        }
     };
 };
 void insert(Serializer& serializer, const GetImei& self);
@@ -250,6 +288,7 @@ void insert(Serializer& serializer, const GetImei::Response& self);
 void extract(Serializer& serializer, GetImei::Response& self);
 
 CmdResult getImei(C::mip_interface& device, char* imeiOut);
+
 ///@}
 ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -259,19 +298,37 @@ CmdResult getImei(C::mip_interface& device, char* imeiOut);
 
 struct GetImsi
 {
+    
     static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
     static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_GET_IMSI;
     
     static const bool HAS_FUNCTION_SELECTOR = false;
+    static const uint32_t ECHOED_PARAMS  = 0x0000;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
     
+    auto as_tuple() const
+    {
+        return std::make_tuple();
+    }
     
+    auto as_tuple()
+    {
+        return std::make_tuple();
+    }
     struct Response
     {
         static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
         static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::REPLY_GET_IMSI;
         
+        static const uint32_t ECHOED_PARAMS  = 0x0000;
+        static const uint32_t COUNTER_PARAMS = 0x00000000;
         char IMSI[32] = {0};
         
+        
+        auto as_tuple()
+        {
+            return std::make_tuple(std::ref(IMSI));
+        }
     };
 };
 void insert(Serializer& serializer, const GetImsi& self);
@@ -281,6 +338,7 @@ void insert(Serializer& serializer, const GetImsi::Response& self);
 void extract(Serializer& serializer, GetImsi::Response& self);
 
 CmdResult getImsi(C::mip_interface& device, char* imsiOut);
+
 ///@}
 ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -290,19 +348,37 @@ CmdResult getImsi(C::mip_interface& device, char* imsiOut);
 
 struct GetIccid
 {
+    
     static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
     static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_GET_ICCID;
     
     static const bool HAS_FUNCTION_SELECTOR = false;
+    static const uint32_t ECHOED_PARAMS  = 0x0000;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
     
+    auto as_tuple() const
+    {
+        return std::make_tuple();
+    }
     
+    auto as_tuple()
+    {
+        return std::make_tuple();
+    }
     struct Response
     {
         static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
         static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::REPLY_GET_ICCID;
         
+        static const uint32_t ECHOED_PARAMS  = 0x0000;
+        static const uint32_t COUNTER_PARAMS = 0x00000000;
         char ICCID[32] = {0};
         
+        
+        auto as_tuple()
+        {
+            return std::make_tuple(std::ref(ICCID));
+        }
     };
 };
 void insert(Serializer& serializer, const GetIccid& self);
@@ -312,6 +388,7 @@ void insert(Serializer& serializer, const GetIccid::Response& self);
 void extract(Serializer& serializer, GetIccid::Response& self);
 
 CmdResult getIccid(C::mip_interface& device, char* iccidOut);
+
 ///@}
 ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -321,15 +398,6 @@ CmdResult getIccid(C::mip_interface& device, char* iccidOut);
 
 struct ConnectedDeviceType
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_CONNECTED_DEVICE_TYPE;
-    
-    static const bool HAS_WRITE_FUNCTION = true;
-    static const bool HAS_READ_FUNCTION = true;
-    static const bool HAS_SAVE_FUNCTION = true;
-    static const bool HAS_LOAD_FUNCTION = true;
-    static const bool HAS_RESET_FUNCTION = true;
-    
     enum class Type : uint8_t
     {
         GENERIC = 0,  ///<  
@@ -339,13 +407,49 @@ struct ConnectedDeviceType
     FunctionSelector function = static_cast<FunctionSelector>(0);
     Type devType = static_cast<Type>(0);
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_CONNECTED_DEVICE_TYPE;
+    
+    static const bool HAS_FUNCTION_SELECTOR = true;
+    static const uint32_t WRITE_PARAMS   = 0x8001;
+    static const uint32_t READ_PARAMS    = 0x8000;
+    static const uint32_t SAVE_PARAMS    = 0x8000;
+    static const uint32_t LOAD_PARAMS    = 0x8000;
+    static const uint32_t DEFAULT_PARAMS = 0x8000;
+    static const uint32_t ECHOED_PARAMS  = 0x0000;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(devType);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(devType));
+    }
+    
+    static ConnectedDeviceType create_sld_all(::mip::FunctionSelector function)
+    {
+        ConnectedDeviceType cmd;
+        cmd.function = function;
+        return cmd;
+    }
+    
     struct Response
     {
         static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
         static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::REPLY_CONNECTED_DEVICE_TYPE;
         
+        static const uint32_t ECHOED_PARAMS  = 0x0000;
+        static const uint32_t COUNTER_PARAMS = 0x00000000;
         Type devType = static_cast<Type>(0);
         
+        
+        auto as_tuple()
+        {
+            return std::make_tuple(std::ref(devType));
+        }
     };
 };
 void insert(Serializer& serializer, const ConnectedDeviceType& self);
@@ -359,6 +463,7 @@ CmdResult readConnectedDeviceType(C::mip_interface& device, ConnectedDeviceType:
 CmdResult saveConnectedDeviceType(C::mip_interface& device);
 CmdResult loadConnectedDeviceType(C::mip_interface& device);
 CmdResult defaultConnectedDeviceType(C::mip_interface& device);
+
 ///@}
 ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,19 +473,37 @@ CmdResult defaultConnectedDeviceType(C::mip_interface& device);
 
 struct GetActCode
 {
+    
     static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
     static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_GET_ACT_CODE;
     
     static const bool HAS_FUNCTION_SELECTOR = false;
+    static const uint32_t ECHOED_PARAMS  = 0x0000;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
     
+    auto as_tuple() const
+    {
+        return std::make_tuple();
+    }
     
+    auto as_tuple()
+    {
+        return std::make_tuple();
+    }
     struct Response
     {
         static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
         static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::REPLY_GET_ACT_CODE;
         
+        static const uint32_t ECHOED_PARAMS  = 0x0000;
+        static const uint32_t COUNTER_PARAMS = 0x00000000;
         char ActivationCode[32] = {0};
         
+        
+        auto as_tuple()
+        {
+            return std::make_tuple(std::ref(ActivationCode));
+        }
     };
 };
 void insert(Serializer& serializer, const GetActCode& self);
@@ -390,6 +513,7 @@ void insert(Serializer& serializer, const GetActCode::Response& self);
 void extract(Serializer& serializer, GetActCode::Response& self);
 
 CmdResult getActCode(C::mip_interface& device, char* activationcodeOut);
+
 ///@}
 ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -399,19 +523,37 @@ CmdResult getActCode(C::mip_interface& device, char* activationcodeOut);
 
 struct GetModemFirmwareVersion
 {
+    
     static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
     static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_GET_MODEM_FIRMWARE_VERSION;
     
     static const bool HAS_FUNCTION_SELECTOR = false;
+    static const uint32_t ECHOED_PARAMS  = 0x0000;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
     
+    auto as_tuple() const
+    {
+        return std::make_tuple();
+    }
     
+    auto as_tuple()
+    {
+        return std::make_tuple();
+    }
     struct Response
     {
         static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
         static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::REPLY_GET_MODEM_FIRMWARE_VERSION;
         
+        static const uint32_t ECHOED_PARAMS  = 0x0000;
+        static const uint32_t COUNTER_PARAMS = 0x00000000;
         char ModemFirmwareVersion[32] = {0};
         
+        
+        auto as_tuple()
+        {
+            return std::make_tuple(std::ref(ModemFirmwareVersion));
+        }
     };
 };
 void insert(Serializer& serializer, const GetModemFirmwareVersion& self);
@@ -421,6 +563,7 @@ void insert(Serializer& serializer, const GetModemFirmwareVersion::Response& sel
 void extract(Serializer& serializer, GetModemFirmwareVersion::Response& self);
 
 CmdResult getModemFirmwareVersion(C::mip_interface& device, char* modemfirmwareversionOut);
+
 ///@}
 ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -431,21 +574,39 @@ CmdResult getModemFirmwareVersion(C::mip_interface& device, char* modemfirmwarev
 
 struct GetRssi
 {
+    
     static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
     static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_GET_RSSI;
     
     static const bool HAS_FUNCTION_SELECTOR = false;
+    static const uint32_t ECHOED_PARAMS  = 0x0000;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
     
+    auto as_tuple() const
+    {
+        return std::make_tuple();
+    }
     
+    auto as_tuple()
+    {
+        return std::make_tuple();
+    }
     struct Response
     {
         static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
         static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::REPLY_GET_RSSI;
         
+        static const uint32_t ECHOED_PARAMS  = 0x0000;
+        static const uint32_t COUNTER_PARAMS = 0x00000000;
         bool valid = 0;
         int32_t rssi = 0;
         int32_t signalQuality = 0;
         
+        
+        auto as_tuple()
+        {
+            return std::make_tuple(std::ref(valid),std::ref(rssi),std::ref(signalQuality));
+        }
     };
 };
 void insert(Serializer& serializer, const GetRssi& self);
@@ -455,6 +616,7 @@ void insert(Serializer& serializer, const GetRssi::Response& self);
 void extract(Serializer& serializer, GetRssi::Response& self);
 
 CmdResult getRssi(C::mip_interface& device, bool* validOut, int32_t* rssiOut, int32_t* signalqualityOut);
+
 ///@}
 ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -465,11 +627,6 @@ CmdResult getRssi(C::mip_interface& device, bool* validOut, int32_t* rssiOut, in
 
 struct ServiceStatus
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_SERVICE_STATUS;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
     struct ServiceFlags : Bitfield<ServiceFlags>
     {
         enum _enumType : uint8_t
@@ -504,16 +661,39 @@ struct ServiceStatus
     uint32_t reserved1 = 0;
     uint32_t reserved2 = 0;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_SERVICE_STATUS;
+    
+    static const bool HAS_FUNCTION_SELECTOR = false;
+    static const uint32_t ECHOED_PARAMS  = 0x0000;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(reserved1,reserved2);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(reserved1),std::ref(reserved2));
+    }
     struct Response
     {
         static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
         static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::REPLY_SERVICE_STATUS;
         
+        static const uint32_t ECHOED_PARAMS  = 0x0000;
+        static const uint32_t COUNTER_PARAMS = 0x00000000;
         ServiceFlags flags;
         uint32_t receivedBytes = 0;
         uint32_t lastBytes = 0;
         uint64_t lastBytesTime = 0;
         
+        
+        auto as_tuple()
+        {
+            return std::make_tuple(std::ref(flags),std::ref(receivedBytes),std::ref(lastBytes),std::ref(lastBytesTime));
+        }
     };
 };
 void insert(Serializer& serializer, const ServiceStatus& self);
@@ -523,6 +703,7 @@ void insert(Serializer& serializer, const ServiceStatus::Response& self);
 void extract(Serializer& serializer, ServiceStatus::Response& self);
 
 CmdResult serviceStatus(C::mip_interface& device, uint32_t reserved1, uint32_t reserved2, ServiceStatus::ServiceFlags* flagsOut, uint32_t* receivedbytesOut, uint32_t* lastbytesOut, uint64_t* lastbytestimeOut);
+
 ///@}
 ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -534,18 +715,30 @@ CmdResult serviceStatus(C::mip_interface& device, uint32_t reserved1, uint32_t r
 
 struct ProdEraseStorage
 {
+    MediaSelector media = static_cast<MediaSelector>(0);
+    
     static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
     static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_PROD_ERASE_STORAGE;
     
     static const bool HAS_FUNCTION_SELECTOR = false;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
     
-    MediaSelector media = static_cast<MediaSelector>(0);
+    auto as_tuple() const
+    {
+        return std::make_tuple(media);
+    }
     
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(media));
+    }
+    typedef void Response;
 };
 void insert(Serializer& serializer, const ProdEraseStorage& self);
 void extract(Serializer& serializer, ProdEraseStorage& self);
 
 CmdResult prodEraseStorage(C::mip_interface& device, MediaSelector media);
+
 ///@}
 ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -556,21 +749,33 @@ CmdResult prodEraseStorage(C::mip_interface& device, MediaSelector media);
 
 struct LedControl
 {
-    static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
-    static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_CONTROL;
-    
-    static const bool HAS_FUNCTION_SELECTOR = false;
-    
     uint8_t primaryColor[3] = {0};
     uint8_t altColor[3] = {0};
     LedAction act = static_cast<LedAction>(0);
     uint32_t period = 0;
     
+    static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
+    static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_CONTROL;
+    
+    static const bool HAS_FUNCTION_SELECTOR = false;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
+    
+    auto as_tuple() const
+    {
+        return std::make_tuple(primaryColor,altColor,act,period);
+    }
+    
+    auto as_tuple()
+    {
+        return std::make_tuple(std::ref(primaryColor),std::ref(altColor),std::ref(act),std::ref(period));
+    }
+    typedef void Response;
 };
 void insert(Serializer& serializer, const LedControl& self);
 void extract(Serializer& serializer, LedControl& self);
 
 CmdResult ledControl(C::mip_interface& device, const uint8_t* primarycolor, const uint8_t* altcolor, LedAction act, uint32_t period);
+
 ///@}
 ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -582,17 +787,29 @@ CmdResult ledControl(C::mip_interface& device, const uint8_t* primarycolor, cons
 
 struct ModemHardReset
 {
+    
     static const uint8_t DESCRIPTOR_SET = ::mip::commands_rtk::DESCRIPTOR_SET;
     static const uint8_t FIELD_DESCRIPTOR = ::mip::commands_rtk::CMD_MODEM_HARD_RESET;
     
     static const bool HAS_FUNCTION_SELECTOR = false;
+    static const uint32_t COUNTER_PARAMS = 0x00000000;
     
+    auto as_tuple() const
+    {
+        return std::make_tuple();
+    }
     
+    auto as_tuple()
+    {
+        return std::make_tuple();
+    }
+    typedef void Response;
 };
 void insert(Serializer& serializer, const ModemHardReset& self);
 void extract(Serializer& serializer, ModemHardReset& self);
 
 CmdResult modemHardReset(C::mip_interface& device);
+
 ///@}
 ///
 
