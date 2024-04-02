@@ -13,7 +13,7 @@ project_dir="${script_dir}/.."
 
 # Parse the mip_publisher_mapping header to find all the topics we have listed
 node_topics=$(cat "${project_dir}/include/microstrain_inertial_driver_common/utils/mappings/mip_publisher_mapping.h"  | grep -E "static constexpr auto \w+_TOPIC" | cut -d'=' -f2 | tr -d ' ' | cut -d';' -f1 | tr -d '"')
-wiki_topics=$(cat "${project_dir}/wiki.txt" | sed -n '/== Services ==/q;p' | grep -oE "^ \* '''(\w|/)+" | tr -s "'" | cut -d"'" -f2 | sed 's/^\/\(.*\)$/\1/g')
+wiki_topics=$(cat "${project_dir}/wiki/main.txt" | sed -n '/== Subscriptions ==/q;p' | grep -oE "^ \* '''(\w|/)+" | tr -s "'" | cut -d"'" -f2 | sed 's/^\/\(.*\)$/\1/g')
 
 # Stop printing everything for the loop
 set +x
