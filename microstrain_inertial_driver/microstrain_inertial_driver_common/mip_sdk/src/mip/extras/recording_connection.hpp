@@ -28,7 +28,7 @@ public:
     bool sendToDevice(const uint8_t* data, size_t length) final;
     bool recvFromDevice(uint8_t* buffer, size_t max_length, Timeout wait_time, size_t* length_out, Timestamp* timestamp_out) final;
 
-    bool isConnected() 
+    bool isConnected() const
     {
         if(mConnection)
             return mConnection->isConnected();
@@ -49,12 +49,25 @@ public:
         return false;
     };
 
+    uint64_t recvFileBytesWritten()
+    {
+        return mRecvFileWritten;
+    }
+
+    uint64_t sendFileBytesWritten()
+    {
+        return mSendFileWritten;
+    }
+
 protected:
     Connection* mConnection;
 
     // Files may be NULL to not record one direction or the other
     std::ostream* mRecvFile;
     std::ostream* mSendFile;
+
+    uint64_t mRecvFileWritten = 0;
+    uint64_t mSendFileWritten = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
