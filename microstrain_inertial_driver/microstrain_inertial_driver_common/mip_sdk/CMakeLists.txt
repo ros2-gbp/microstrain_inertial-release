@@ -124,6 +124,8 @@ set(MIP_SOURCES
     "${MIP_DIR}/mip_result.c"
     "${MIP_DIR}/mip_result.h"
     "${MIP_DIR}/mip_types.h"
+    "${MIP_DIR}/definitions/common.c"
+    "${MIP_DIR}/definitions/common.h"
     "${MIP_DIR}/definitions/descriptors.c"
     "${MIP_DIR}/definitions/descriptors.h"
     "${MIP_DIR}/mip.hpp"
@@ -148,6 +150,8 @@ set(MIPDEF_SOURCES
     "${MIP_DIR}/definitions/commands_gnss.h"
     "${MIP_DIR}/definitions/commands_rtk.c"
     "${MIP_DIR}/definitions/commands_rtk.h"
+    "${MIP_DIR}/definitions/commands_aiding.c"
+    "${MIP_DIR}/definitions/commands_aiding.h"
     "${MIP_DIR}/definitions/commands_system.c"
     "${MIP_DIR}/definitions/commands_system.h"
     "${MIP_DIR}/definitions/data_filter.c"
@@ -187,6 +191,7 @@ if(MIP_USE_TCP)
     )
 endif()
 if(MIP_USE_EXTRAS)
+    list(APPEND MIP_DEFINES "MIP_USE_EXTRAS")
     set(MIP_EXTRAS_DIR "${MIP_DIR}/extras")
     set(MIP_EXTRA_SOURCES
         "${MIP_EXTRAS_DIR}/recording_connection.hpp"
@@ -236,8 +241,9 @@ if(${MIP_ENABLE_DIAGNOSTICS})
 endif()
 
 # Disable windows defined min/max
+# Set Windows header version (0x0501 is _WIN32_WINNT_WINXP, required for TCP)
 if(WIN32)
-  list(APPEND MIP_DEFINES "NOMINMAX=1")
+  list(APPEND MIP_DEFINES "NOMINMAX=1" "_WIN32_WINNT=0x0501")
 endif()
 
 if(MSVC)
@@ -247,6 +253,13 @@ else()
 endif()
 
 target_compile_definitions(mip PUBLIC "${MIP_DEFINES}")
+
+#
+# Libraries
+#
+if(WIN32 AND MIP_USE_TCP)
+    target_link_libraries(mip PUBLIC "ws2_32")
+endif()
 
 #
 # TESTING
