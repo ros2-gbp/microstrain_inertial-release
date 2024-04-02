@@ -2,6 +2,23 @@
 Changelog for package microstrain_inertial_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.1.0 (2024-04-02)
+------------------
+* ROS updates microstrain_inertial_driver_common submodule (`#315 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/315>`_)
+* Moves meshes and urdf files to seperate package (`#313 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/313>`_)
+* Contributors: Rob
+
+4.0.1 (2024-03-12)
+------------------
+* Updates microstrain_inertial_driver_common submodule (`#307 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/307>`_)
+* Resets forced Cmake variables properly (`#299 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/299>`_)
+* Contributors: Rob
+
+4.0.0 (2024-01-26)
+------------------
+* ROS2 Standardize and update to work better with ROS standard tools (`#295 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/295>`_)
+* Contributors: Rob
+
 3.2.1 (2024-01-26)
 ------------------
 * Fixes math to properly put the velocity into the sensor frame when using ENU (`#292 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/292>`_)
