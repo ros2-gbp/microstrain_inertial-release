@@ -10,8 +10,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef _MICROSTRAIN_3DM_H
-#define _MICROSTRAIN_3DM_H
+#ifndef _MICROSTRAIN_INERTIAL_DRIVER_MICROSTRAIN_INERTIAL_DRIVER_H
+#define _MICROSTRAIN_INERTIAL_DRIVER_MICROSTRAIN_INERTIAL_DRIVER_H
 
 #include <cstdio>
 #include <unistd.h>
@@ -28,7 +28,7 @@ namespace microstrain
 ///
 /// \brief Microstrain class
 ///
-class Microstrain : public rclcpp_lifecycle::LifecycleNode, public NodeCommon
+class Microstrain : public rclcpp::Node, public NodeCommon
 {
  public:
   Microstrain();
@@ -39,12 +39,6 @@ class Microstrain : public rclcpp_lifecycle::LifecycleNode, public NodeCommon
   bool deactivate_node();
   bool shutdown_or_cleanup_node();
 
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_configure(const rclcpp_lifecycle::State &prev_state);
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_activate(const rclcpp_lifecycle::State &prev_state);
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State &prev_state);
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State &prev_state);
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_shutdown(const rclcpp_lifecycle::State &prev_state);
-
   void parse_and_publish_main_wrapper();
   void parse_and_publish_aux_wrapper();
 
@@ -54,7 +48,7 @@ class Microstrain : public rclcpp_lifecycle::LifecycleNode, public NodeCommon
   RosTimerType create_timer_wrapper(double rate_hz);
 
   void handle_exception();
-}; //Microstrain class
+}; //MicrostrainLifecycle class
 
 template<typename Object, void (Object::*Callback)()>
 RosTimerType Microstrain::create_timer_wrapper(double rate_hz)
@@ -68,4 +62,4 @@ RosTimerType Microstrain::create_timer_wrapper(double rate_hz)
 
 } // namespace microstrain
 
-#endif  // _MICROSTRAIN_3DM_GX5_45_H
+#endif  // _MICROSTRAIN_INERTIAL_DRIVER_MICROSTRAIN_INERTIAL_DRIVER_H
