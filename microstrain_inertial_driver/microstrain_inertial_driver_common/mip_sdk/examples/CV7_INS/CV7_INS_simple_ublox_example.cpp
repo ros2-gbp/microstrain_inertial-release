@@ -139,9 +139,10 @@ int main(int argc, const char* argv[])
     //
     //External GNSS antenna reference frame
     //
-    float external_gnss_antenna_to_vehicle_frame_rotation_euler[4] = {0.0, 0.0, 0.0, 0.0};  // GNSS position/velocity measurements are agnostic to rotation, rotation set to zero
-    if(commands_aiding::writeReferenceFrame(*device, gnss_antenna_sensor_id, mip::commands_aiding::ReferenceFrame::Format::EULER,
-                                            input_arguments.gnss_antenna_lever_arm, external_gnss_antenna_to_vehicle_frame_rotation_euler) != CmdResult::ACK_OK)
+    commands_aiding::FrameConfig::Rotation external_gnss_antenna_to_vehicle_frame_rotation;
+    external_gnss_antenna_to_vehicle_frame_rotation.euler = mip::Vector3f(0.0f, 0.0f, 0.0f);  // GNSS position/velocity measurements are agnostic to rotation, rotation set to zero // GNSS position/velocity measurements are agnostic to rotation, rotation set to zero
+    if(commands_aiding::writeFrameConfig(*device, gnss_antenna_sensor_id, mip::commands_aiding::FrameConfig::Format::EULER, true,
+                                          input_arguments.gnss_antenna_lever_arm, external_gnss_antenna_to_vehicle_frame_rotation) != CmdResult::ACK_OK)
         exit_gracefully("ERROR: Unable to configure external GNSS antenna frame ID");
 
 
@@ -410,20 +411,11 @@ void print_device_information(const commands_base::BaseDeviceInfo& device_info)
 
 InputArguments parse_input_arguments(int argc, const char* argv[])
 {
+    // TODO: Set max arg check for this.
     if (argc < 8)
     {
         usage(argv[0]);
-        exit_gracefully("ERROR: Incorrect input arguments");
-    }
-
-    // Look for help flag
-    for (int i = 1; i < argc; i++)
-    {
-        if(strcmp(argv[i], "-h") == 0)
-        {
-            usage(argv[0]);
-            exit_gracefully("");
-        }
+        exit_gracefully(nullptr);
     }
 
     InputArguments input_arguments;
@@ -491,6 +483,7 @@ void exit_gracefully(const char *message)
         printf("%s\n", message);
 
 #ifdef _WIN32
+    std::cout << "Press ENTER to exit..." << std::endl;
     int dummy = getchar();
 #endif
 
