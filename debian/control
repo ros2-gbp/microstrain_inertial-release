@@ -1,0 +1,12 @@
+Source: ros-iron-microstrain-inertial-description
+Section: misc
+Priority: optional
+Maintainer: Rob Fisher <rob.fisher@parker.com>
+Build-Depends: debhelper (>= 9.0.0), ros-iron-ament-cmake, ros-iron-ros-workspace
+Homepage: https://github.com/LORD-MicroStrain/microstrain_inertial
+Standards-Version: 3.9.2
+
+Package: ros-iron-microstrain-inertial-description
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-iron-xacro, ros-iron-ros-workspace
+Description: URDF and stl files for MicroStrain sensors.
