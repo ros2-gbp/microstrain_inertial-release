@@ -368,12 +368,12 @@ static const mip_gnss_utc_time_data_valid_flags MIP_GNSS_UTC_TIME_DATA_VALID_FLA
 struct mip_gnss_utc_time_data
 {
     uint16_t year;
-    uint8_t month;
-    uint8_t day;
-    uint8_t hour;
-    uint8_t min;
-    uint8_t sec;
-    uint32_t msec; ///< [Milliseconds]
+    uint8_t month; ///< Month (1-12)
+    uint8_t day; ///< Day (1-31)
+    uint8_t hour; ///< Hour (0-23)
+    uint8_t min; ///< Minute (0-59)
+    uint8_t sec; ///< Second (0-59)
+    uint32_t msec; ///< Millisecond(0-999)
     mip_gnss_utc_time_data_valid_flags valid_flags;
     
 };
@@ -459,13 +459,14 @@ void extract_mip_gnss_clock_info_data_valid_flags(struct mip_serializer* seriali
 ///@{
 
 typedef uint8_t mip_gnss_fix_info_data_fix_type;
-static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_3D        = 0; ///<  
-static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_2D        = 1; ///<  
-static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_TIME_ONLY = 2; ///<  
-static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_NONE      = 3; ///<  
-static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_INVALID   = 4; ///<  
-static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_RTK_FLOAT = 5; ///<  
-static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_RTK_FIXED = 6; ///<  
+static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_3D           = 0; ///<  
+static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_2D           = 1; ///<  
+static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_TIME_ONLY    = 2; ///<  
+static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_NONE         = 3; ///<  
+static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_INVALID      = 4; ///<  
+static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_RTK_FLOAT    = 5; ///<  
+static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_RTK_FIXED    = 6; ///<  
+static const mip_gnss_fix_info_data_fix_type MIP_GNSS_FIX_INFO_DATA_FIX_TYPE_FIX_DIFFERENTIAL = 7; ///<  
 
 typedef uint16_t mip_gnss_fix_info_data_fix_flags;
 static const mip_gnss_fix_info_data_fix_flags MIP_GNSS_FIX_INFO_DATA_FIX_FLAGS_NONE       = 0x0000;
@@ -1029,7 +1030,7 @@ struct mip_gnss_rtk_corrections_status_data
     double time_of_week; ///< GPS Time of week [seconds]
     uint16_t week_number; ///< GPS Week since 1980 [weeks]
     mip_gnss_rtk_corrections_status_data_epoch_status epoch_status; ///< Status of the corrections received during this epoch
-    uint32_t dongle_status; ///< RTK Dongle Status Flags (valid only when using RTK dongle, see MIP_CMD_DESC_RTK_GET_STATUS_FLAGS for details)
+    uint32_t dongle_status; ///< RTK Dongle Status Flags (valid only when using RTK dongle, see Get RTK Device Status Flags (0x0F,0x01) for details)
     float gps_correction_latency; ///< Latency of last GPS correction [seconds]
     float glonass_correction_latency; ///< Latency of last GLONASS correction [seconds]
     float galileo_correction_latency; ///< Latency of last Galileo correction [seconds]
