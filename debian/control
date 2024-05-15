@@ -1,0 +1,12 @@
+Source: ros-iron-microstrain-inertial-driver
+Section: misc
+Priority: optional
+Maintainer: Rob Fisher <rob.fisher@parker.com>
+Build-Depends: debhelper (>= 9.0.0), curl, git, jq, libcurl4-openssl-dev, libeigen3-dev, libgeographic-dev, ros-iron-ament-cmake-gtest, ros-iron-ament-cpplint, ros-iron-diagnostic-updater, ros-iron-geometry-msgs, ros-iron-lifecycle-msgs, ros-iron-microstrain-inertial-msgs, ros-iron-nav-msgs, ros-iron-nmea-msgs, ros-iron-rclcpp-lifecycle, ros-iron-ros-environment, ros-iron-rosidl-default-generators, ros-iron-rtcm-msgs, ros-iron-sensor-msgs, ros-iron-std-msgs, ros-iron-std-srvs, ros-iron-tf2, ros-iron-tf2-geometry-msgs, ros-iron-tf2-ros, ros-iron-ros-workspace, ros-iron-rosidl-typesupport-fastrtps-c, ros-iron-rosidl-typesupport-fastrtps-cpp
+Homepage: https://github.com/LORD-MicroStrain/microstrain_inertial
+Standards-Version: 3.9.2
+
+Package: ros-iron-microstrain-inertial-driver
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-iron-diagnostic-aggregator, ros-iron-diagnostic-updater, ros-iron-geometry-msgs, ros-iron-lifecycle-msgs, ros-iron-microstrain-inertial-msgs, ros-iron-nav-msgs, ros-iron-nmea-msgs, ros-iron-rclcpp-lifecycle, ros-iron-rosidl-default-runtime, ros-iron-rtcm-msgs, ros-iron-sensor-msgs, ros-iron-std-msgs, ros-iron-std-srvs, ros-iron-tf2, ros-iron-tf2-geometry-msgs, ros-iron-tf2-ros, ros-iron-ros-workspace
+Description: The ros_mscl package provides a driver for the LORD/Microstrain inertial products.
