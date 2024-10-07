@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <errno.h>
+#include <tuple>
 #include <vector>
 #include <string>
 #include <memory>
@@ -305,7 +306,49 @@ bool Config::setupDevice(RosNodeType* node)
 
 bool Config::configureBase(RosNodeType* node)
 {
-  // No base configuration commands in the driver yet
+  // Read local config
+  bool set_baud;
+  int32_t aux_baudrate;
+  getParam<bool>(node, "set_baud", set_baud, false);
+  getParam<int32_t>(node, "aux_baudrate", aux_baudrate, 115200);
+
+  mip::CmdResult mip_cmd_result;
+  const uint8_t descriptor_set = mip::commands_base::DESCRIPTOR_SET;
+
+  // We will handle setting the aux port baudrate here if we were requested to do so
+  // We will not handle setting the main port baudrate because that is handled in the connection class in a way that will always work
+  if (mip_device_->supportsDescriptor(descriptor_set, mip::commands_base::CMD_COMM_SPEED))
+  {
+    if (set_baud)
+    {
+      // Only set the baudrate if the device has an aux port (we can check by fetching the baudrate)
+      uint32_t tmp_baud;
+      if (!!(mip_cmd_result = mip::commands_base::readCommSpeed(*mip_device_, 2, &tmp_baud)))
+      {
+        MICROSTRAIN_INFO(node_, "Note: Setting aux port baudrate to %d", aux_baudrate);
+        if (!(mip_cmd_result = mip::commands_base::writeCommSpeed(*mip_device_, 2, aux_baudrate)))
+        {
+          MICROSTRAIN_MIP_SDK_ERROR(node_, mip_cmd_result, "Failed to write aux port baudrate");
+          return false;
+        }
+
+        // Reopen the aux port if it is already open
+        if (aux_device_ != nullptr)
+        {
+          if (!aux_device_->reconnect())
+          {
+            MICROSTRAIN_ERROR(node_, "Failed to open aux port after configuring baudrate");
+            return false;
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    MICROSTRAIN_INFO(node_, "Device does not support comm speed command");
+  }
+
   return true;
 }
 
@@ -319,6 +362,15 @@ bool Config::configure3DM(RosNodeType* node)
   float hardware_odometer_uncertainty;
   bool sbas_enable, sbas_enable_ranging, sbas_enable_corrections, sbas_apply_integrity;
   std::vector<uint16_t> sbas_prns;
+  bool low_pass_filter_config;
+  bool accel_low_pass_filter_enable, accel_low_pass_filter_auto;
+  float accel_low_pass_filter_frequency;
+  bool gyro_low_pass_filter_enable, gyro_low_pass_filter_auto;
+  float gyro_low_pass_filter_frequency;
+  bool mag_low_pass_filter_enable, mag_low_pass_filter_auto;
+  float mag_low_pass_filter_frequency;
+  bool pressure_low_pass_filter_enable, pressure_low_pass_filter_auto;
+  float pressure_low_pass_filter_frequency;
   getParam<bool>(node, "gpio_config", gpio_config, false);
   getParam<bool>(node, "nmea_message_config", nmea_message_config, false);
   getParam<int32_t>(node, "filter_pps_source", filter_pps_source, 1);
@@ -329,6 +381,19 @@ bool Config::configure3DM(RosNodeType* node)
   getParam<bool>(node, "sbas_enable_corrections", sbas_enable_corrections, false);
   getParam<bool>(node, "sbas_apply_integrity", sbas_apply_integrity, false);
   getUint16ArrayParam(node, "sbas_included_prns", sbas_prns, std::vector<uint16_t>());
+  getParam<bool>(node, "low_pass_filter_config", low_pass_filter_config, false);
+  getParam<bool>(node, "accel_low_pass_filter_enable", accel_low_pass_filter_enable, false);
+  getParam<bool>(node, "accel_low_pass_filter_auto", accel_low_pass_filter_auto, false);
+  getParamFloat(node, "accel_low_pass_filter_frequency", accel_low_pass_filter_frequency, 0);
+  getParam<bool>(node, "gyro_low_pass_filter_enable", gyro_low_pass_filter_enable, false);
+  getParam<bool>(node, "gyro_low_pass_filter_auto", gyro_low_pass_filter_auto, false);
+  getParamFloat(node, "gyro_low_pass_filter_frequency", gyro_low_pass_filter_frequency, 0);
+  getParam<bool>(node, "mag_low_pass_filter_enable", mag_low_pass_filter_enable, false);
+  getParam<bool>(node, "mag_low_pass_filter_auto", mag_low_pass_filter_auto, false);
+  getParamFloat(node, "mag_low_pass_filter_frequency", mag_low_pass_filter_frequency, 0);
+  getParam<bool>(node, "pressure_low_pass_filter_enable", pressure_low_pass_filter_enable, false);
+  getParam<bool>(node, "pressure_low_pass_filter_auto", pressure_low_pass_filter_auto, false);
+  getParamFloat(node, "pressure_low_pass_filter_frequency", pressure_low_pass_filter_frequency, 0);
 
   mip::CmdResult mip_cmd_result;
   const uint8_t descriptor_set = mip::commands_3dm::DESCRIPTOR_SET;
@@ -537,6 +602,65 @@ bool Config::configure3DM(RosNodeType* node)
     MICROSTRAIN_INFO(node_, "Note: The device does not support the nmea message format command");
   }
 
+  // Low pass filter settings.
+  std::vector<std::tuple<uint8_t, bool, bool, float>> low_pass_filter_settings =
+  {
+    {mip::data_sensor::DATA_ACCEL_SCALED, accel_low_pass_filter_enable, accel_low_pass_filter_auto, accel_low_pass_filter_frequency},
+    {mip::data_sensor::DATA_GYRO_SCALED, gyro_low_pass_filter_enable, gyro_low_pass_filter_auto, gyro_low_pass_filter_frequency},
+    {mip::data_sensor::DATA_MAG_SCALED, mag_low_pass_filter_enable, mag_low_pass_filter_auto, mag_low_pass_filter_frequency},
+    {mip::data_sensor::DATA_PRESSURE_SCALED, pressure_low_pass_filter_enable, pressure_low_pass_filter_auto, pressure_low_pass_filter_frequency},
+  };
+  const bool supports_deprecated_low_pass_filter_settings = mip_device_->supportsDescriptor(mip::commands_3dm::ImuLowpassFilter::DESCRIPTOR_SET, mip::commands_3dm::ImuLowpassFilter::FIELD_DESCRIPTOR);
+  const bool supports_low_pass_filter_settings = mip_device_->supportsDescriptor(mip::commands_3dm::LowpassFilter::DESCRIPTOR_SET, mip::commands_3dm::LowpassFilter::FIELD_DESCRIPTOR);
+  if (supports_deprecated_low_pass_filter_settings || supports_low_pass_filter_settings)
+  {
+    if (low_pass_filter_config)
+    {
+      for (const auto& low_pass_filter_entry : low_pass_filter_settings)
+      {
+        const uint8_t low_pass_filter_field_descriptor = std::get<0>(low_pass_filter_entry);
+        const bool low_pass_filter_enable = std::get<1>(low_pass_filter_entry);
+        const bool low_pass_filter_auto = std::get<2>(low_pass_filter_entry);
+        const float low_pass_filter_frequency = std::get<3>(low_pass_filter_entry);
+        if (supports_low_pass_filter_settings)
+        {
+          MICROSTRAIN_INFO(node_, "Configuring low pass filter with:");
+          MICROSTRAIN_INFO(node_, "  descriptor_set = 0x%02x", mip::data_sensor::DESCRIPTOR_SET);
+          MICROSTRAIN_INFO(node_, "  field_descriptor = 0x%02x", low_pass_filter_field_descriptor);
+          MICROSTRAIN_INFO(node_, "  enable = %d", low_pass_filter_enable);
+          MICROSTRAIN_INFO(node_, "  manual = %d", !low_pass_filter_auto);
+          MICROSTRAIN_INFO(node_, "  frequency = %f", low_pass_filter_frequency);
+          if (!(mip_cmd_result = mip::commands_3dm::writeLowpassFilter(*mip_device_, mip::data_sensor::DESCRIPTOR_SET, low_pass_filter_field_descriptor, low_pass_filter_enable, !low_pass_filter_auto, low_pass_filter_frequency)))
+          {
+            MICROSTRAIN_MIP_SDK_ERROR(node_, mip_cmd_result, "Failed to configure low pass filter settings");
+            return false;
+          }
+        }
+        else
+        {
+          MICROSTRAIN_INFO(node_, "Configuring low pass filter with:");
+          MICROSTRAIN_INFO(node_, "  field_descriptor = 0x%02x", low_pass_filter_field_descriptor);
+          MICROSTRAIN_INFO(node_, "  enable = %d", low_pass_filter_enable);
+          MICROSTRAIN_INFO(node_, "  manual = %d", !low_pass_filter_auto);
+          MICROSTRAIN_INFO(node_, "  frequency = %u", static_cast<uint16_t>(std::round(low_pass_filter_frequency)));
+          if (!(mip_cmd_result = mip::commands_3dm::writeImuLowpassFilter(*mip_device_, low_pass_filter_field_descriptor, low_pass_filter_enable, !low_pass_filter_auto, static_cast<uint16_t>(std::round(low_pass_filter_frequency)), 0)))
+          {
+            MICROSTRAIN_MIP_SDK_ERROR(node_, mip_cmd_result, "Failed to configure low pass filter settings");
+            return false;
+          }
+        }
+      }
+    }
+    else
+    {
+      MICROSTRAIN_INFO(node_, "Not configuring low pass filter settings because 'low_pass_filter_config' is false");
+    }
+  }
+  else
+  {
+    MICROSTRAIN_INFO(node_, "Note: The device does not support the low pass filter settings command");
+  }
+
   return true;
 }
 
@@ -603,12 +727,14 @@ bool Config::configureFilter(RosNodeType* node)
   int dynamics_mode;
   int32_t declination_source;
   double declination;
+  int32_t gnss_aiding_source_control;
   getParam<int32_t>(node, "filter_declination_source", declination_source, 2);
   getParam<double>(node, "filter_declination", declination, 0.23);
   getParam<int32_t>(node, "filter_heading_source", heading_source, 0x1);
   getParam<float>(node, "filter_initial_heading", initial_heading, 0.0);
   getParam<bool>(node, "filter_auto_init", filter_auto_init, true);
   getParam<int32_t>(node, "filter_dynamics_mode", dynamics_mode, 1);
+  getParam<int32_t>(node, "filter_gnss_aiding_source_control", gnss_aiding_source_control, 1);
 
   // Read some QG7 specific filter options
   int filter_adaptive_level;
@@ -782,6 +908,17 @@ bool Config::configureFilter(RosNodeType* node)
   else
   {
     MICROSTRAIN_INFO(node_, "Note: The device does not support the vehicle dynamics mode command.");
+  }
+
+  // Set GNSS aiding source control
+  if (mip_device_->supportsDescriptor(descriptor_set, mip::commands_filter::CMD_GNSS_SOURCE_CONTROL))
+  {
+    MICROSTRAIN_INFO(node_, "Setting GNSS aiding source control to %d", gnss_aiding_source_control);
+    if (!(mip_cmd_result = mip::commands_filter::writeGnssSource(*mip_device_, static_cast<mip::commands_filter::GnssSource::Source>(gnss_aiding_source_control))))
+    {
+      MICROSTRAIN_MIP_SDK_ERROR(node_, mip_cmd_result, "Could not set GNSS aiding source control");
+      return false;
+    }
   }
 
   // Set heading Source
@@ -1136,6 +1273,22 @@ bool Config::configureFilterAidingMeasurement(const mip::commands_filter::Aiding
   }
   return true;
 }
+
+bool Config::configureGnssSourceControl(const mip::commands_filter::GnssSource::Source gnss_source)
+{
+  const mip::CmdResult mip_cmd_result = mip::commands_filter::writeGnssSource(*mip_device_, gnss_source);
+  if (mip_cmd_result == mip::CmdResult::NACK_INVALID_PARAM)
+  {
+    MICROSTRAIN_WARN(node_, "Gnss source 0x%02x is not valid for this device. Please refer to the device manual for more information", static_cast<uint32_t>(gnss_source));
+  }
+  else if (!mip_cmd_result)
+  {
+    MICROSTRAIN_MIP_SDK_ERROR(node_, mip_cmd_result, "Failed to set gnss source");
+    return false;
+  }
+  return true;
+}
+
 
 bool Config::configureHeadingSource(const mip::commands_filter::HeadingSource::Source heading_source)
 {
