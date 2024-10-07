@@ -1,0 +1,12 @@
+Source: ros-rolling-microstrain-inertial-examples
+Section: misc
+Priority: optional
+Maintainer: Rob Fisher <rob.fisher@parker.com>
+Build-Depends: debhelper (>= 9.0.0), ros-rolling-ament-cmake, ros-rolling-ros-workspace
+Homepage: https://github.com/LORD-MicroStrain/microstrain_inertial
+Standards-Version: 3.9.2
+
+Package: ros-rolling-microstrain-inertial-examples
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-microstrain-inertial-driver, ros-rolling-rviz-imu-plugin, ros-rolling-rviz2, ros-rolling-sensor-msgs, ros-rolling-tf2-ros, ros-rolling-ros-workspace
+Description: Simple examples using the microstrain_inertial_driver for MicroStrain sensors.
