@@ -1,187 +1,237 @@
 ## Description
 
-Collection of simple examples to get started using the `microstrain_inertial_driver`.
+Interface (driver) software, including ROS node, for inertial sensors from [MicroStrain by HBK](https://microstrain.com), developed in Williston, VT.
+
+Implemented using the MicroStrain Inertial Protocol SDK ([`mip_sdk`](https://github.com/LORD-MicroStrain/mip_sdk))
 
 ## Table of Contents
 
-* [Common Steps](#common-steps)
-* [Device Examples](#device-examples)
-    * [CV7-INS / GV7-INS](#cv7-ins--gv7-ins)
-    * [CV7 / GV7](#cv7--gv7)
-    * [GQ7](#gq7)
-    * [GX5-GNSS / CX5-GNSS](#gx5-gnss--cx5-gnss)
-    * [GX5-AHRS / CX5-AHRS](#gx5-ahrs--cx5-ahrs)
-    * [GX5-AR / CX5-AR](#gx5-ar--cx5-ar)
-* [Other Examples](#other-examples)
-    * [CV7-INS / GV7-INS with NMEA over aux](#cv7-ins--gv7-ins-with-nmea-over-aux-port)
+* [ROS Wiki](#ros-wiki)
+* [ROS vs ROS2 versions](#ros-vs-ros2-versions)
+* [Packages](#packages)
+* [Install Instructions](#install-instructions)
+    * [Buildfarm](#buildfarm)
+    * [Source](#source)
+    * [Udev Rules](#udev-rules)
+* [Building From Source](#building-from-source)
+* [Run Instructions](#run-instructions)
+    * [Single Device](#launch-the-node-and-publish-data)
+    * [Multiple Devices](#publish-data-from-two-devices-simultaneously)
+* [Docker Development](#docker-development)
+    * [VSCode](#vscode)
+    * [Make](#make)
+* [Shared Codebases](#shared-codebases)
+* [Previous Versions](#previous-versions)
+* [Licenses](#license)
 
-## Common Steps
+## ROS Wiki
 
-For all the below examples, you should make sure you take the following steps before running them:
+For more information on the data published and services available see our [ROS wiki](https://wiki.ros.org/microstrain_inertial_driver) page
 
-1. Install the [udev rules](../README.md#udev-rules) (This should only be done once and if using the ROS package index, these will be installed automatically)
-2. Connect your device.
-3. Modify the `port` and `baudrate` parameters in the `.yml` file for the example you are running to point to the port
-your device is connected to. This is especially important if using serial instead of USB.
-4. [Install or build](../README.md#install-instructions) the `microstrain_inertial_examples` and `microstrain_inertial_driver` packages
-5. Source your `setup.bash`
-    1. If building from source, run: `source install/setup.bash` after building
-    2. If installing from the ROS package index, run: `source /opt/ros/<ROS Version>/setup.bash` after installing
+## ROS vs ROS2 Versions
 
-## Device Examples
+Note that this branch contains the ROS2 implementation for the packages. If you are looking for the ROS version, you should go to the [`ros`](https://github.com/LORD-MicroStrain/ROS-MSCL/tree/ros) branch
 
-This package contains some example launch files to show users a simple starting configuration when using different devices.
+## Packages
 
-### CV7-INS / GV7-INS
+This repo contains the following packages:
 
-**NOTE**: This example works for the [3DM-CV7-INS](https://www.microstrain.com/inertial-sensors/3DM-CV7-INS), and
-[3DM-GV7-INS](https://www.microstrain.com/inertial-sensors/3DM-GV7-INS)
+* [`microstrain_inertial_driver`](./microstrain_inertial_driver) -- ROS node that will communicate with the devices
+* [`microstrain_inertial_msgs`](./microstrain_inertial_msgs) -- Collection of messages produced by the `microstrain_inertial_driver` node
+* [`microstrain_inretial_examples`](./microstrain_inertial_examples) -- Collection of examples that show how to interact with the `microstrain_inertial_driver` node. Currently contains one simple C++ and python subscriber node
+* [`microstrain_inertial_rqt`](./microstrain_inertial_rqt) -- Collection of RQT plugins to view the status of inertial devices when running the `microstrain_inertial_driver`
 
-The CV7-INS example contains a simple example of outputting relative position data from a CV7-INS and displaying that data in rviz.
-This example also shows how one would input external position and velocity into the sensor.
+## Install Instructions
 
-To run this example, run the following command after doing the [common steps](#common-steps):
+### Buildfarm
 
+As of `v2.0.5` this package is being built and distributed by the ROS build farm. If you do not need to modify the source, it is recommended to install directly from the buildfarm by running the following commands where `ROS_DISTRO` is the version of ROS you are using such as `galactic` or `humble`:
+
+Driver:
 ```bash
-ros2 launch microstrain_inertial_examples cv7_ins_launch.py
+sudo apt-get update && sudo apt-get install ros-ROS_DISTRO-microstrain-inertial-driver
 ```
 
-This example contains the following files:
-
-* [`launch/cv7_ins_launch.py`](./launch/cv7_ins_launch.py)
-* [`config/cv7_ins/cv7_ins.yml`](./config/cv7_ins/cv7_ins.yml)
-* [`config/cv7_ins/display.rviz`](./config/cv7_ins/display.rviz)
-
-### CV7 / GV7
-
-**NOTE**: This example works for the [3DM-CV7-AR](https://www.microstrain.com/inertial-sensors/3dmcv7-ar),
-[3DM-CV7-AHRS](https://www.microstrain.com/inertial-sensors/3dm-cv7-ahrs),
-[3DM-GV7-AR](https://www.microstrain.com/inertial-sensors/3DM-GV7-AR), and
-[3DM-GV7-AHRS](https://www.microstrain.com/inertial-sensors/3DM-GV7-AHRS).
-
-The CV7 example contains a simple example of outputting
-orientation, angular and linear velocity from a CV7 and displaying that data in rviz.
-
-To run this example, run the following command after doing the [common steps](#common-steps):
-
+RQT:
 ```bash
-ros2 launch microstrain_inertial_examples cv7_launch.py
+sudo apt-get update && sudo apt-get install ros-ROS_DISTRO-microstrain-inertial-rqt
 ```
 
-This example contains the following files:
+For more information on the ROS distros and platforms we support, please see [index.ros.org](https://index.ros.org/r/microstrain_inertial/github-LORD-MicroStrain-microstrain_inertial/#humble)
 
-* [`launch/cv7_launch.py`](./launch/cv7_launch.py)
-* [`config/cv7/cv7.yml`](./config/cv7/cv7.yml)
-* [`config/cv7/display.rviz`](./config/cv7/display.rviz)
 
-### GQ7
+### Source
 
-**NOTE**: This example works for the [3DM-GQ7](https://www.microstrain.com/inertial-sensors/3dm-gq7)
+If you need to modify the source of this repository, or are running on a platform that we do not support, you can build from source by following the [Building From Source](#building-from-source) guide below.
 
-The GQ7 example contains a simple example of outputting
-global and relative position data from a GQ7 and displaying that data in rviz.
-This example also assumes that the user will be using a [3DM-RTK](https://www.microstrain.com/inertial-sensors/3dm-rtk)
-connected to the GQ7 aux port, but can be tweaked to not require the 3DM-RTK.
 
-To run this example
+#### **IMPORTANT NOTE ABOUT CLONING**
 
-1. Do the [common steps](#common-steps)
-2. Ensure that your GQ7 has both antennas connected. See the microstrain
-[Antenna Installation](https://s3.amazonaws.com/files.microstrain.com/GQ7+User+Manual/user_manual_content/installation/Antenna.htm)
-page for more help with this.
-3. Update `gnss1_antenna_offset` and `gnss2_antenna_offset` in `config/gq7/gq7.yml` to your antenna offsets
-4. Run the following command:
+This repo takes advantage of git submodules in order to share code between ROS versions. When cloning the repo, you should clone with the `--recursive` flag to get all of the submodules.
+
+If you have already cloned the repo, you can checkout the submodules by running `git submodule update --init --recursive` from the project directory
+
+The [CMakeLists.txt](./microstrain_inertial_msgs/CMakeLists.txt) will automatically checkout the submodule if it does not exist, but it will not keep it up to date. In order to keep up to date, every
+time you pull changes you should pull with the `--recurse-submodules` flag, or alternatively run `git submodule update --recursive` after you have pulled changes
+
+
+## Building from source
+
+1. Install ROS2 and create a workspace: [Configuring Your ROS2 Environment](https://docs.ros.org/en/foxy/Tutorials/Configuring-ROS2-Environment.html)
+
+2. Clone the repository into your workspace:
+    ```bash
+    git clone --recursive --branch ros2 https://github.com/LORD-MicroStrain/microstrain_inertial.git ~/your_workspace/src/microstrain_inertial
+    ```
+
+3. Install rosdeps for this package: `rosdep install --from-paths ~/your_workspace/src -i -r -y`
+
+4. Build your workspace:
+
+    ```bash        
+    cd ~/your_workspace
+    colcon build
+    source ~/your_workspace/install/setup.bash
+    ```
+   The source command will need to be run in each terminal prior to launching a ROS node.
+
+## Udev Rules
+
+**NOTE**: If installing from the buildfarm, the udev rules will be installed automatically
+
+This driver comes with [udev rules](https://wiki.debian.org/udev) that will create a symlink for all microstrain devices.
+To install the rules. Download the [udev](./microstrain_inertial_driver/debian/udev) file from this repo and copy it to
+`/etc/udev/rules.d/100-microstrain.rules`
+
+Once the udev rules are installed, the devices will appear as follows in the file system, where {serial} is the serial number of the device:
+
+* `/dev/microstrain_main` - Most recent non-GQ7 device, or the main port of a GQ7 connected. **NOTE**: Do not use this rule with multiple devices as it gets overridden with multiple devices.
+* `/dev/microstrain_aux` - Most recent GQ7 aux port connected. **NOTE**: Do not use this rule with multiple devices as it gets overridden with multiple devices.
+* `/dev/microstrain_main_{serial}` - All non-GQ7 devices, and the main port of GQ7 devices
+* `/dev/microstrain_aux_{serial}` - The aux port of GQ7 devices
+
+## Run Instructions
+
+#### Launch the node and publish data
+The following command will launch the driver. Keep in mind each instance needs to be run in a separate terminal.
 ```bash
-ros2 launch microstrain_inertial_examples gq7_launch.py
+ros2 launch microstrain_inertial_driver microstrain_launch.py
 ```
 
-This example contains the following files:
+The node has some optional launch parameters that can be specified from the command line in the format `param:=value`
+- `namespace` : namespace that the driver will run in. All services and publishers will be prepended with this, default: `/`
+- `node_name` : name of the driver, default: `microstrain_inertial_driver`
+- `debug`     : output debug logs, default: `false`
+- `params_file` : path to a parameter file to override the default parameters stored in [`params.yml`](./microstrain_inertial_driver/microstrain_inertial_driver_common/config/params.yml), default: [`empty.yml`](./microstrain_inertial_driver/config/empty.yml)
+    
+#### Publish data from two devices simultaneously  
 
-* [`launch/gq7_launch.py`](./launch/gq7_launch.py)
-* [`config/gq7/gq7.yml`](./config/gq7/gq7.yml)
-* [`config/gq7/display.rviz`](./config/gq7/display.rviz)
+1. Create the following files somewhere on your system (we will assume they are stored in the `~` directory):
+    1. `~/sensor_a_params.yml` with the contents:
+        ```yaml
+        port: /dev/ttyACM0
+        ```
+    2. `~/sensor_b_params.yml` with the contents:
+        ```yaml
+        port: /dev/ttyACM1
+        ```
+2. In two different terminals:
+    ```bash    
+    ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_a_node namespace:=sensor_a params_file:="~/sensor_a_params.yml"
+    ```
+    ```bash    
+    ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_b_node namespace:=sensor_b params_file:="~/sensor_b_params.yml"
+    ```
 
-### GX5-GNSS / CX5-GNSS
+This will launch two nodes that publish data to different namespaces:
+- `/sensor_a`, connected over port: `/dev/ttyACM0`
+- `/sensor_b`, connected over port: `/dev/ttyACM1`
 
-**NOTE**: This example works for the [3DM-GX5-GNSS](https://www.microstrain.com/inertial-sensors/3DM-GX5-45) (3DM-GX5-45), and
-[3DM-CX5-45](https://www.microstrain.com/inertial-sensors/3dm-cx5-45) (3DM-CX5-45)
+An example subscriber node can be found in the [MicroStrain Examples](./microstrain_inertial_examples) package.
 
-The GX5-GNSS example contains a simple example of outputting global and relative position data from a GX5-GNSS
-and displaying that data in rviz.
+#### Lifecycle Node
 
-1. Do the [common steps](#common-steps)
-2. Ensure that your GX5-GNSS has it's antenna connected. See the microstrain
-[Antenna Installation](https://s3.amazonaws.com/files.microstrain.com/GQ7+User+Manual/user_manual_content/installation/Antenna.htm)
-page for more help with this.
-3. Update `gnss1_antenna_offset` in `config/gx5_45/gx5_45.yml` to your antenna offset
-4. Run the following command:
+This package also provides a lifecycle node implementation. This version of the driver can be launched by running:
 ```bash
-ros2 launch microstrain_inertial_examples gx5_45_launch.py
+ros2 launch microstrain_inertial_driver microstrain_lifecycle_launch.py
 ```
 
-### GX5-AHRS / CX5-AHRS
+This launch file accepts all of the same arguments as the above node as well as:
+- `configure` : If set to the exact string `true` the driver will automatically transition into the configure state.
+- `activate`  : If set to the exact string `true` the driver will automatically transition into the activate state.
 
-**NOTE**: This example works for the [3DM-GX5-AHRS](https://www.microstrain.com/inertial-sensors/3DM-GX5-25) (3DM-GX5-25), and
-[3DM-CX5-AHRS](https://www.microstrain.com/inertial-sensors/3dm-cx5-25) (3DM-CX5-25)
+Additionally, the node may be transitioned anytime after startup using the following commands (note that the `namespace` and `name` parameters will affect the node name in the following commands):
 
-The GX5-AHRS example contains a simple example of outputting
-orientation, angular and linear velocity from a GX5-AHRS and displaying that data in rviz.
+- Transition to configure state: 
+    ```bash
+    ros2 lifecycle set /microstrain_inertial_driver_node configure
+    ```
 
-To run this example, run the following command after doing the [common steps](#common-steps):
+- Transition to active state: 
 
-```bash
-ros2 launch microstrain_inertial_examples gx5_25_launch.py
-```
+    ```bash
+    ros2 lifecycle set /microstrain_inertial_driver_node activate
+    ```
 
-This example contains the following files:
+You can stop data from streaming by putting the device into the "deactivate" state.  Both the "cleanup" and "shutdown" states will disconnect from the device and close the raw data log file (if enabled.)
 
-* [`launch/gx5_25_launch.py`](./launch/gx5_25_launch.py)
-* [`config/gx5_25/gx5_25.yml`](./config/gx5_25/gx5_25.yml)
-* [`config/gx5_25/display.rviz`](./config/gx5_25/display.rviz)
+## Docker Development
 
-### GX5-AR / CX5-AR
+### VSCode
 
-**NOTE**: This example works for the [3DM-GX5-AR](https://www.microstrain.com/inertial-sensors/3DM-GX5-15) (3DM-GX5-15), and
-[3DM-CX5-AR](https://www.microstrain.com/inertial-sensors/3dm-cx5-15) (3DM-CX5-15)
+The easiest way to develop in docker while still using an IDE is to use VSCode. Follow the steps below to develop on this repo in a docker container.
 
-The GX5-AR example contains a simple example of outputting
-orientation, angular and linear velocity from a GX5-AR and displaying that data in rviz.
+1. Install the following dependencies:
+    1. [VSCode](https://code.visualstudio.com/)
+    1. [Docker](https://docs.docker.com/get-docker/)
+1. Open VSCode and install the following [plugins](https://code.visualstudio.com/docs/editor/extension-marketplace):
+    1. [VSCode Remote Containers plugin](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+1. Open this directory in a container:
+    1. Open the `microstrain_inertial` directory in VSCode
+    1. Click the green `><` icon in the bottom left corner of the window
+    1. Choose `Reopen In Container`
+1. Once the project is open in the container, it will take some time to automatically install the rosdeps inside the container, you can then build and run the container by following step 4 of [Building from source](#building-from-source)
 
-To run this example, run the following command after doing the [common steps](#common-steps):
+### Make
 
-```bash
-ros2 launch microstrain_inertial_examples gx5_15_launch.py
-```
+If you are comfortable working from the command line, or want to produce your own runtime images, the [Makefile](./devcontainer/Makefile) in the [.devcontainer](./devcontainer) 
+directory can be used to build docker images, run a shell inside the docker images and produce a runtime image. Follow the steps below to setup your environment to use the `Makefile`
 
-This example contains the following files:
+1. Install the following dependencies:
+    1. [Make](https://www.gnu.org/software/make/)
+    1. [Docker](https://docs.docker.com/get-docker/)
+    1. [qemu-user-static](https://packages.ubuntu.com/bionic/qemu-user-static) (**only for multiarch builds**)
+        1. Run the following command to register the qemu binaries with docker: `docker run --rm --privileged multiarch/qemu-user-static:register`
 
-* [`launch/gx5_15_launch.py`](./launch/gx5_15_launch.py)
-* [`config/gx5_15/gx5_15.yml`](./config/gx5_15/gx5_15.yml)
-* [`config/gx5_15/display.rviz`](./config/gx5_15/display.rviz)
+The `Makefile` exposes the following tasks. They can all be run from the `.devcontainer` directory:
+* `make build-shell` - Builds the development docker image and starts a shell session in the image allowing the user to develop and build the ROS project using common commands such as `catkin_make`
+* `make image` - Builds the runtime image that contains only the required dependencies and the ROS node.
+* `make clean` - Cleans up after the above two tasks
 
-## Other Examples
+## Shared codebases
 
-Other assorted examples users may find useful
+Both the `ros` and `ros2` branches share most of their code by using git submodules. The following submodules contain most of the actual implementations:
 
-### CV7-INS / GV7-INS with NMEA over aux port
+* [microstrain_inertial_driver_common](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/tree/main) submoduled in this repo at `microstrain_inertial_driver/microstrain_inertial_driver_common`
+* [microstrain_inertial_msgs_common](https://github.com/LORD-MicroStrain/microstrain_inertial_msgs_common/tree/main) submoduled in this repo at `microstrain_inertial_msgs/microstrain_inertial_msgs_common`
+* [microstrain_inertial_rqt_common](https://github.com/LORD-MicroStrain/microstrain_inertial_rqt_common/tree/main) submoduled in this repo at `microstrain_inertial_rqt/microstrain_inertial_rqt_common`
 
-**NOTE**: This example works for the [3DM-CV7-INS](https://www.microstrain.com/inertial-sensors/3DM-CV7-INS), and
-[3DM-GV7-INS](https://www.microstrain.com/inertial-sensors/3DM-GV7-INS) and requires an external GNSS receiver such as the
-[SparkFun ZED-F9P](https://www.sparkfun.com/products/16481?gad_source=1&gclid=CjwKCAjwps-zBhAiEiwALwsVYTSItzsET_3hKDL1FDr5R1byfLifyTtszQVOrpOVjDAC2XtMhd6FwxoCXjEQAvD_BwE)
+## Previous Versions
 
-This example is similar to the [CV7-INS / GV7-INS](#cv7-ins--gv7-ins), but instead of getting the data over the ROS network,
-the data will be provided by GPIO pins setup as an "aux" port on the device. This example follows the wiring setup provided in
-the [NMEA Input](https://mip-documentation-test.s3.ca-central-1.amazonaws.com/CV7-INS+Online/user_manual_content/additional_features/NMEA%20Input.htm)
-page on the MicroStrain manual.
+Previous versions of the driver were released as [tags](https://github.com/LORD-MicroStrain/microstrain_inertial/tags) on Github. They can also be found in specific branches:
 
-To run this example, run the following command after doing the [common steps](#common-steps):
+* [`ros2-3.x.x`](https://github.com/LORD-MicroStrain/microstrain_inertial/tree/ros2-3.x.x) contains the most recent code before the standardizing refactor
+* [`ros2-2.x.x`](https://github.com/LORD-MicroStrain/microstrain_inertial/tree/ros2-2.x.x) contains the most recent code before the MIP SDK refactor
 
-```bash
-ros2 launch microstrain_inertial_examples cv7_ins_nmea_aux_launch.py
-```
+## License
 
-This example contains the following files:
+Different packages in this repo are released under different licenses. For more information, see the LICENSE files in each of the package directories.
 
-* [`launch/cv7_ins_nmea_aux_launch.py`](./launch/cv7_ins_nmea_aux_launch.py)
-* [`config/cv7_ins_nmea_aux/cv7_ins.yml`](./config/cv7_ins_nmea_aux/cv7_ins.yml)
-* [`config/cv7_ins_nmea_aux/display.rviz`](./config/cv7_ins_nmea_aux/display.rviz)
+Here is a quick overview of the licenses used in each package:
+
+| Package                                                                  | License |
+| ------------------------------------------------------------------------ | ------- |
+| [microstrain_inertial_driver](./microstrain_inertial_driver/LICENSE)     | MIT     |
+| [microstrain_inertial_msgs](./microstrain_inertial_msgs/LICENSE)         | MIT     |
+| [microstrain_inertial_rqt](./microstrain_inertial_rqt/LICENSE)           | BSD     |
+| [microstrain_inertial_examples](./microstrain_inertial_examples/LICENSE) | MIT     |
