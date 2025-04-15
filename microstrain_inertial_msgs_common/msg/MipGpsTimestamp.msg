@@ -7,3 +7,6 @@ float64 tow
 
 # GPS Week number since 1980 (weeks)
 uint16 week_number
+
+# Valid Flags bitfield
+microstrain_inertial_msgs/MipGpsTimestampValidFlags valid_flags
