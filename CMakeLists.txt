@@ -112,9 +112,7 @@ find_package(microstrain_inertial_msgs REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 ament_export_include_directories()
 ament_export_dependencies(
-    roscpp
     rosidl_default_runtime
-    cmake_modules
     tf2
     tf2_ros
     tf2_geometry_msgs
@@ -125,7 +123,6 @@ ament_export_dependencies(
     nav_msgs
     nmea_msgs
     rtcm_msgs
-    message_runtime
 		microstrain_inertial_msgs
 )
 
