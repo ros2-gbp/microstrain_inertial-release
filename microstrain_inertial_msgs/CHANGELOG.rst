@@ -2,6 +2,12 @@
 Changelog for package microstrain_inertial_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.7.0 (2025-06-05)
+------------------
+
+4.6.1 (2025-04-25)
+------------------
+
 4.6.0 (2025-04-15)
 ------------------
 * ROS: Adds system time sync status and adds valid_flags to gps_timestamp in MIP header (`#380 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/380>`_)

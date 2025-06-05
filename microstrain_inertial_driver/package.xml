@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>microstrain_inertial_driver</name>
-  <version>4.6.0</version>
+  <version>4.7.0</version>
   <description>The ros_mscl package provides a driver for the LORD/Microstrain inertial products.</description>
   <author>Brian Bingham</author>
   <author>Parker Hannifin Corp</author>
@@ -41,9 +41,9 @@
   <build_depend>rclcpp_lifecycle</build_depend>
   <member_of_group>rosidl_interface_packages</member_of_group>
 
-  <!-- Dependencies needed to install MSCL from the CMake file  -->
-  <build_depend>jq</build_depend>
-  <build_depend>curl</build_depend>
+  <!-- CMake build dependencies -->
+  <build_depend>ament_cmake</build_depend>
+  <build_depend>ament_cmake_target_dependencies</build_depend>
 
   <!-- Test Dependencies -->
   <test_depend>ament_cpplint</test_depend>
