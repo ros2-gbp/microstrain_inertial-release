@@ -17,6 +17,8 @@ set(BUILD_TESTING_TEMP "${BUILD_TESTING}")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(MICROSTRAIN_USE_STD_ENDIAN OFF CACHE BOOL "" FORCE)
+set(MICROSTRAIN_USE_STD_SPAN OFF CACHE BOOL "" FORCE)
 
 # Locate the common code and messages
 set(COMMON_NAME "microstrain_inertial_driver_common")
@@ -147,8 +149,6 @@ include_directories(
   ${GeographicLib_INCLUDE_DIRS}
 )
 
-ament_package()
-
 set(COMMON_SRC_FILES
   ${COMMON_SRC_DIR}/subscribers.cpp
   ${COMMON_SRC_DIR}/publishers.cpp
@@ -266,10 +266,16 @@ endif()
 # Linking
 target_link_libraries(${LIFECYCLE_NAME}
   mip
+  microstrain
+  microstrain_serial
+  microstrain_recording_connection
   ${GeographicLib_LIBRARIES}
 )
 target_link_libraries(${NODE_NAME}
   mip
+  microstrain
+  microstrain_serial
+  microstrain_recording_connection
   ${GeographicLib_LIBRARIES}
 )
 
@@ -295,6 +301,8 @@ install(DIRECTORY launch config
 install(DIRECTORY ${COMMON_DIR}/config
   DESTINATION share/${PROJECT_NAME}/${COMMON_NAME}
 )
+
+ament_package()
 
 # Reset the forced options
 set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_TEMP}" CACHE BOOL "${BUILD_SHARED_LIBS_TEMP}" FORCE)
