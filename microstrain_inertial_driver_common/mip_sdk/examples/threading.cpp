@@ -1,4 +1,21 @@
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// threading.cpp
+//
+// C++ example program to print device information from any mip-enabled MicroStrain device.
+//
+//!@section LICENSE
+//!
+//! THE PRESENT SOFTWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING
+//! CUSTOMERS WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER
+//! FOR THEM TO SAVE TIME. AS A RESULT, MICROSTRAIN BY HBK SHALL NOT BE HELD
+//! LIABLE FOR ANY DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY
+//! CLAIMS ARISING FROM THE CONTENT OF SUCH SOFTWARE AND/OR THE USE MADE BY CUSTOMERS
+//! OF THE CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+//
+/////////////////////////////////////////////////////////////////////////////
+
 #include "example_utils.hpp"
 
 #include <mip/definitions/commands_base.hpp>
@@ -41,12 +58,12 @@ unsigned int display_progress()
     return count;
 }
 
-void packet_callback(void*, const mip::PacketRef& packet, mip::Timestamp timestamp)
+void packet_callback(void*, const mip::PacketView&, mip::Timestamp)
 {
-    numSamples++;
+    numSamples = numSamples + 1;
 }
 
-void device_thread_loop(mip::DeviceInterface* device)
+void device_thread_loop(mip::Interface* device)
 {
     while(!stop)
     {
@@ -60,18 +77,23 @@ void device_thread_loop(mip::DeviceInterface* device)
     }
 }
 
-bool update_device(mip::DeviceInterface& device, mip::Timeout wait_time)
+bool update_device(mip::Interface& device, mip::Timeout wait_time, bool from_cmd)
 {
-    if( wait_time > 0 )
-        return device.defaultUpdate(wait_time);
+    // Do normal updates only if called from a command handler.
+    // This separates the main thread from the data collection thread.
+    if( !from_cmd )
+        return device.defaultUpdate(wait_time, true);
 
     // Optionally display progress while waiting for command replies.
-    // Displaying it here makes it update more frequently.
+    // Displaying it here instead makes it update more frequently.
     //display_progress();
 
-    // Avoid failing the update function as long as the other thread is running.
-    // Doing so may cause a race condition (see comments in mip_interface_wait_for_reply).
+    // Sleep for a bit to save power. Note that waiting too long
+    // in here can extend command timeout times.
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+    // Avoid failing the update function as long as the other thread is still running.
+    // Doing so may cause a race condition (see comments in mip_interface_wait_for_reply).
     return true;
 }
 
@@ -82,7 +104,7 @@ int main(int argc, const char* argv[])
     try
     {
         std::unique_ptr<ExampleUtils> utils = handleCommonArgs(argc, argv);
-        std::unique_ptr<mip::DeviceInterface>& device = utils->device;
+        std::unique_ptr<mip::Interface>& device = utils->device;
 
         // Disable all streaming channels.
         mip::commands_base::setIdle(*device);
@@ -99,7 +121,7 @@ int main(int argc, const char* argv[])
 #if USE_THREADS
         // Set the update function. Before this call, command replies are processed by the main thread.
         // After this, replies will be processed by the device thread.
-        device->setUpdateFunction<&update_device>();
+        device->setUpdateFunctionFree<&update_device>();
 
         // Start the device thread.
         std::thread deviceThread( &device_thread_loop, device.get() );
@@ -115,8 +137,12 @@ int main(int argc, const char* argv[])
             count = display_progress();
 
             // Ping the device a bunch (stress test).
-            // If setUpdateFunction above is commented out, this can crash the program.
-            for(unsigned int i=0; i<10; i++)
+            // This attempts to trigger race conditions by having the main thread
+            // send pings while the other thread tries to collect data.
+            // Try commenting out the setUpdateFunction call
+            // above and notice the erratic or errant behavior.
+            // Note that only one thread at a time can safely send commands.
+            for(unsigned int i=0; i<100; i++)
                 mip::commands_base::ping(*device);
 
         } while(count < maxSamples);
@@ -131,7 +157,7 @@ int main(int argc, const char* argv[])
         deviceThread.join();
 #endif
     }
-    catch(const std::underflow_error& ex)
+    catch(const std::underflow_error&)
     {
         return printCommonUsage(argv);
     }
