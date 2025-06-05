@@ -1,0 +1,12 @@
+Source: ros-jazzy-microstrain-inertial-examples
+Section: misc
+Priority: optional
+Maintainer: Rob Fisher <rob.fisher@parker.com>
+Build-Depends: debhelper (>= 9.0.0), ros-jazzy-ament-cmake, ros-jazzy-ros-workspace
+Homepage: https://github.com/LORD-MicroStrain/microstrain_inertial
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-microstrain-inertial-examples
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-microstrain-inertial-driver, ros-jazzy-rviz-imu-plugin, ros-jazzy-rviz2, ros-jazzy-sensor-msgs, ros-jazzy-tf2-ros, ros-jazzy-ros-workspace
+Description: Simple examples using the microstrain_inertial_driver for MicroStrain sensors.
