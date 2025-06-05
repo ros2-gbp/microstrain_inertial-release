@@ -2,6 +2,16 @@
 Changelog for package microstrain_inertial_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.7.0 (2025-06-05)
+------------------
+* Adds support for CV7-GNSS-INS (`#389 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/389>`_)
+* Contributors: Rob
+
+4.6.1 (2025-04-25)
+------------------
+* No longer exports ROS packages
+* Contributors: Rob
+
 4.6.0 (2025-04-15)
 ------------------
 * ROS: Adds system time sync status and adds valid_flags to gps_timestamp in MIP header (`#380 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/380>`_)
