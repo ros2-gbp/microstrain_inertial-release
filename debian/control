@@ -1,0 +1,12 @@
+Source: ros-lyrical-microstrain-inertial-rqt
+Section: misc
+Priority: optional
+Maintainer: Rob Fisher <rob.fisher@parker.com>
+Build-Depends: debhelper (>= 9.0.0), ros-lyrical-geometry-msgs, ros-lyrical-microstrain-inertial-msgs, ros-lyrical-nav-msgs, ros-lyrical-rclpy, ros-lyrical-rqt-gui, ros-lyrical-rqt-gui-py, ros-lyrical-std-msgs, ros-lyrical-ros-workspace, python3-all, python3-setuptools, dh-python
+Homepage: https://github.com/LORD-MicroStrain/microstrain_inertial
+Standards-Version: 3.9.2
+
+Package: ros-lyrical-microstrain-inertial-rqt
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-lyrical-geometry-msgs, ros-lyrical-microstrain-inertial-msgs, ros-lyrical-nav-msgs, ros-lyrical-rclpy, ros-lyrical-rqt-gui, ros-lyrical-rqt-gui-py, ros-lyrical-std-msgs, ros-lyrical-ros-workspace
+Description: The microstrain_inertial_rqt package provides several RQT widgets to view the status of Microstrain devices
