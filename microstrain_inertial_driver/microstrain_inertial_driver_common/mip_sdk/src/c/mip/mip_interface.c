@@ -537,9 +537,12 @@ void mip_interface_update_time(mip_interface* device, mip_timestamp timestamp)
 ///@param packet    MIP Packet from the parser.
 ///@param timestamp Timestamp of the packet.
 ///
-void mip_interface_parse_callback(void* device, const mip_packet_view* packet, mip_timestamp timestamp)
+///@returns true
+///
+bool mip_interface_parse_callback(void* device, const mip_packet_view* packet, mip_timestamp timestamp)
 {
     mip_interface_input_packet_from_device(device, packet, timestamp);
+    return true;
 }
 
 
@@ -691,7 +694,7 @@ bool mip_interface_start_command_packet(mip_interface* device, const mip_packet_
 {
     mip_cmd_queue_enqueue(mip_interface_cmd_queue(device), cmd);
 
-    if( !mip_interface_send_to_device(device, mip_packet_pointer(packet), mip_packet_total_length(packet)) )
+    if( !mip_interface_send_to_device(device, mip_packet_data(packet), mip_packet_total_length(packet)) )
     {
         mip_cmd_queue_dequeue(mip_interface_cmd_queue(device), cmd);
         return false;
