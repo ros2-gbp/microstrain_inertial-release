@@ -29,7 +29,8 @@ set(MIP_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/mip_field.h"
     "${CMAKE_CURRENT_LIST_DIR}/mip_interface.c"
     "${CMAKE_CURRENT_LIST_DIR}/mip_interface.h"
-    "${CMAKE_CURRENT_LIST_DIR}/mip_offsets.h"
+    "${CMAKE_CURRENT_LIST_DIR}/mip_logging.c"
+    "${CMAKE_CURRENT_LIST_DIR}/mip_logging.h"
     "${CMAKE_CURRENT_LIST_DIR}/mip_packet.c"
     "${CMAKE_CURRENT_LIST_DIR}/mip_packet.h"
     "${CMAKE_CURRENT_LIST_DIR}/mip_parser.c"
@@ -48,6 +49,12 @@ add_library(${MIP_LIBRARY}
     "${MIP_SOURCES}"
 )
 
+# Configure the project in a sub-folder for IDEs that support it
+file(RELATIVE_PATH PROJECT_RELATIVE_PATH "${MICROSTRAIN_SRC_DIR}" "${CMAKE_CURRENT_LIST_DIR}")
+set_target_properties(${MIP_LIBRARY} PROPERTIES
+    FOLDER "${PROJECT_RELATIVE_PATH}"
+)
+
 if(MSVC)
     source_group(TREE ${MICROSTRAIN_SRC_DIR} FILES ${MIP_SOURCES})
 endif()
@@ -59,9 +66,9 @@ if(${MIP_ENABLE_DIAGNOSTICS})
     target_compile_definitions(${MIP_LIBRARY} PUBLIC "MIP_ENABLE_DIAGNOSTICS=1")
 endif()
 
-target_compile_definitions(${MIP_LIBRARY} PRIVATE ${MICROSTRAIN_PRIVATE_COMPILE_DEFINITIONS})
+target_compile_definitions(${MIP_LIBRARY} PRIVATE ${MIP_PRIVATE_COMPILE_DEFINITIONS})
 
-target_compile_options(${MIP_LIBRARY} PRIVATE ${MICROSTRAIN_PRIVATE_COMPILE_OPTIONS})
+target_compile_options(${MIP_LIBRARY} PRIVATE ${MIP_PRIVATE_COMPILE_OPTIONS})
 
 
 #
