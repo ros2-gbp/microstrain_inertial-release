@@ -5,7 +5,8 @@ set(MICROSTRAIN_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/logging.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/platform.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/serialization.hpp"
-    "${CMAKE_CURRENT_LIST_DIR}/span.hpp"
+    "${CMAKE_CURRENT_LIST_DIR}/array_view.hpp"
+    "${CMAKE_CURRENT_LIST_DIR}/strings.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/serialization/readwrite.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/serialization/serializer.hpp"
 )
@@ -16,12 +17,15 @@ target_sources(${MICROSTRAIN_LIBRARY} PRIVATE ${MICROSTRAIN_SOURCES})
 target_compile_features(${MICROSTRAIN_LIBRARY} PUBLIC cxx_std_11)
 target_include_directories(${MICROSTRAIN_LIBRARY} INTERFACE ${MICROSTRAIN_SRC_CPP_DIR})
 
-if(MICROSTRAIN_USE_STD_SPAN)
-    target_compile_definitions(${MICROSTRAIN_LIBRARY} PUBLIC "MICROSTRAIN_USE_STD_SPAN=1")
-endif()
-
 if(MICROSTRAIN_USE_STD_ENDIAN)
     target_compile_definitions(${MICROSTRAIN_LIBRARY} PUBLIC "MICROSTRAIN_USE_STD_ENDIAN=1")
+    target_compile_features(${MICROSTRAIN_LIBRARY} PUBLIC cxx_std_20)
+
+    include(CheckIncludeFileCXX)
+    CHECK_INCLUDE_FILE_CXX("bit" MICROSTRAIN_COMPILER_SUPPORTS_BIT)
+    if(NOT MICROSTRAIN_COMPILER_SUPPORTS_BIT)
+        message(SEND_ERROR "Your compiler does not have support for #include <bit>, so MICROSTRAIN_USE_STD_ENDIAN cannot be used.")
+    endif()
 endif()
 
 #
