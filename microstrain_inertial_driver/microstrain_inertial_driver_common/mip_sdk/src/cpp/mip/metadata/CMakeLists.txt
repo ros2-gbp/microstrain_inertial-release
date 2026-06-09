@@ -15,13 +15,13 @@ if(MICROSTRAIN_CMAKE_DEBUG)
 endif()
 
 set(MIP_METADATA_SOURCES
+    "${CMAKE_CURRENT_LIST_DIR}/common.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/mip_all_definitions.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/mip_definitions.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/mip_definitions.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/mip_metadata.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/mip_structures.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/mip_meta_utils.hpp"
-    "${CMAKE_CURRENT_LIST_DIR}/definitions/common.hpp"
     ${MIP_DEF_HEADERS}
 )
 
@@ -29,26 +29,32 @@ add_library(${MIP_METADATA_LIBRARY}
     "${MIP_METADATA_SOURCES}"
 )
 
+# Configure the project in a sub-folder for IDEs that support it
+file(RELATIVE_PATH PROJECT_RELATIVE_PATH "${MICROSTRAIN_SRC_DIR}" "${CMAKE_CURRENT_LIST_DIR}")
+set_target_properties(${MIP_METADATA_LIBRARY} PROPERTIES
+    FOLDER "${PROJECT_RELATIVE_PATH}"
+)
+
 if(MSVC)
     source_group(TREE ${MICROSTRAIN_SRC_DIR} FILES ${MIP_METADATA_SOURCES})
 endif()
 
-target_compile_features(${MIP_METADATA_LIBRARY} PUBLIC cxx_std_20)
+target_compile_features(${MIP_METADATA_LIBRARY} PUBLIC cxx_std_17)
 
 target_link_libraries(${MIP_METADATA_LIBRARY} PUBLIC ${MIP_LIBRARY})
 
 target_compile_definitions(${MIP_METADATA_LIBRARY}
     PUBLIC "MIP_ENABLE_METADATA=1"
-    PRIVATE ${MICROSTRAIN_PRIVATE_COMPILE_DEFINITIONS}
+    PRIVATE ${MIP_PRIVATE_COMPILE_DEFINITIONS}
 )
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    list(APPEND MICROSTRAIN_PRIVATE_COMPILE_OPTIONS
+    list(APPEND MIP_PRIVATE_COMPILE_OPTIONS
         "-Wno-missing-braces" # Suppress missing braces warning
     )
 endif()
 
-target_compile_options(${MIP_METADATA_LIBRARY} PRIVATE ${MICROSTRAIN_PRIVATE_COMPILE_OPTIONS})
+target_compile_options(${MIP_METADATA_LIBRARY} PRIVATE ${MIP_PRIVATE_COMPILE_OPTIONS})
 
 set(MIP_LIBRARIES_TMP ${MIP_LIBRARIES_TMP} ${MIP_METADATA_LIBRARY} PARENT_SCOPE)
 
