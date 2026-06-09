@@ -1,10 +1,4 @@
 
-include(CheckIncludeFileCXX)
-
-CHECK_INCLUDE_FILE_CXX("span" MICROSTRAIN_COMPILER_SUPPORTS_SPAN)
-CHECK_INCLUDE_FILE_CXX("bit" MICROSTRAIN_COMPILER_SUPPORTS_BIT)
-
-
 include(CheckCXXSourceCompiles)
 
 check_cxx_source_compiles("

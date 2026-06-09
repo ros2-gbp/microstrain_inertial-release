@@ -2,32 +2,73 @@
 
 #include <microstrain/logging.h>
 
+/*
+namespace microstrain {
+namespace logging {
 
-namespace microstrain
-{
+////////////////////////////////////////////////////////////////////////////////
+///@addtogroup microstrain_logging_cpp
+///@{
 
-//enum class LogLevel
-//{
-//    OFF   = MICROSTRAIN_LOG_LEVEL_OFF,
-//    FATAL = MICROSTRAIN_LOG_LEVEL_FATAL,
-//    ERROR = MICROSTRAIN_LOG_LEVEL_ERROR,
-//    WARN  = MICROSTRAIN_LOG_LEVEL_WARN,
-//    INFO  = MICROSTRAIN_LOG_LEVEL_INFO,
-//    DEBUG = MICROSTRAIN_LOG_LEVEL_DEBUG,
-//    TRACE = MICROSTRAIN_LOG_LEVEL_TRACE,
-//};
+    // enum LogLevel : ::microstrain::C::microstrain_log_level
+    // {
+    //     LEVEL_NONE  = MICROSTRAIN_LOG_LEVEL_OFF,
+    //     LEVEL_FATAL = MICROSTRAIN_LOG_LEVEL_FATAL,
+    //     LEVEL_ERROR = MICROSTRAIN_LOG_LEVEL_ERROR,
+    //     LEVEL_WARN  = MICROSTRAIN_LOG_LEVEL_WARN,
+    //     LEVEL_INFO  = MICROSTRAIN_LOG_LEVEL_INFO,
+    //     LEVEL_DEBUG = MICROSTRAIN_LOG_LEVEL_DEBUG,
+    //     LEVEL_TRACE = MICROSTRAIN_LOG_LEVEL_TRACE,
+    // };
+    using Level = ::microstrain::C::microstrain_log_level;
 
-//namespace logging
-//{
-//    using Callback = ::microstrain_log_callback;
-//
-//    void init(Callback callback, LogLevel max_level, void* user=nullptr);
-//
-//    Callback get_callback() { return ::microstrain_logging_callback(); }
-//    LogLevel max_level() { return static_cast<LogLevel>(::microstrain_logging_level()); }
-//    void* user_pointer() { return ::microstrain_logging_user_data(); }
-//
-//    //void log(LogLevel level, const char* fmt, ...) { ::microstrain_logging_log(level, fmt, args); }
-//}
+    using Callback = ::microstrain::C::microstrain_log_callback;
 
+    inline void init(Callback callback, Level max_level, void* user=nullptr)
+    {
+        return MICROSTRAIN_LOG_INIT(callback, max_level, user);
+    }
+
+    inline Callback get_callback()
+    {
+#ifdef MICROSTRAIN_LOGGING_ENABLED
+        return ::microstrain::C::microstrain_logging_callback();
+#else // !MICROSTRAIN_LOGGING_ENABLED
+        return nullptr;
+#endif // MICROSTRAIN_LOGGING_ENABLED
+    }
+
+    inline Level max_level()
+    {
+#ifdef MICROSTRAIN_LOGGING_ENABLED
+       return ::microstrain::C::microstrain_logging_level();
+#else // !MICROSTRAIN_LOGGING_ENABLED
+       return LogLevel::OFF;
+#endif // MICROSTRAIN_LOGGING_ENABLED
+    }
+
+    inline void* user_pointer()
+    {
+#ifdef MICROSTRAIN_LOGGING_ENABLED
+        return ::microstrain::C::microstrain_logging_user_data();
+#else // !MICROSTRAIN_LOGGING_ENABLED
+        return nullptr;
+#endif // MICROSTRAIN_LOGGING_ENABLED
+    }
+
+    inline void log(Level level, const char* fmt, ...)
+    {
+#ifdef MICROSTRAIN_LOGGING_ENABLED
+        va_list args;
+        va_start(args, fmt);
+        ::microstrain::C::microstrain_logging_log_v(level, fmt, args);
+        va_end(args);
+#endif // MICROSTRAIN_LOGGING_ENABLED
+    }
+
+///@}
+////////////////////////////////////////////////////////////////////////////////
+
+} // namespace logging
 } // namespace microstrain
+*/
