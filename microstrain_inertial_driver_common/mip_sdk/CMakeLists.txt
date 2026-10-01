@@ -1,13 +1,17 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 
-set(CMAKE_CXX_STANDARD 20) # CMake decays this to the highest supported by the compiler
-set(CMAKE_C_STANDARD 11)
+#set(CMAKE_C_STANDARD 11)
+#set(CMAKE_C_STANDARD_REQUIRED ON)
 
 project(
     "MIP_SDK"
-    VERSION "3.1.00"
+    VERSION "4.0.0"
     DESCRIPTION "MicroStrain Communications Library for embedded systems"
     LANGUAGES C CXX
+)
+
+set_property(GLOBAL PROPERTY
+    USE_FOLDERS ON
 )
 
 set(MICROSTRAIN_SRC_DIR "${CMAKE_CURRENT_LIST_DIR}/src")
@@ -19,21 +23,28 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 # Build options
 #
 
-# MicroStrain options
-option(MICROSTRAIN_ENABLE_LOGGING "Build with logging functions enabled" ON)
-
-set(MICROSTRAIN_LOGGING_MAX_LEVEL "MICROSTRAIN_LOG_LEVEL_INFO" CACHE STRING "Max log level the SDK is allowed to log. If this is defined, any log level logged at a higher level than this will result in a noop regardless of runtime configuration.")
-set(MICROSTRAIN_TIMESTAMP_TYPE "uint64_t" CACHE STRING "Override the type used for received data timestamps and timeouts (must be unsigned or at least 64 bits).")
-
 include(check_cxx_support)
+
+set(MIP_LOGGING_MAX_LEVEL "MICROSTRAIN_LOGGING_LEVEL_TRACE_" CACHE STRING "Max log level the SDK is allowed to log. If this is defined, any call to logging functions with a higher level than this will be compiled out.")
+
+set(MIP_LOGGING_ENABLED OFF)
+if(MIP_LOGGING_MAX_LEVEL)
+    if(NOT "${MIP_LOGGING_MAX_LEVEL}" MATCHES "^MICROSTRAIN_LOGGING_LEVEL_[A-Z][A-Z][A-Z][A-Z]?[A-Z]?_$" AND NOT "${MIP_LOGGING_MAX_LEVEL}" MATCHES "^[0-9]$")
+        message(FATAL_ERROR "MIP_LOGGING_MAX_LEVEL must be MICROSTRAIN_LOGGING_LEVEL_*_ or a positive number")
+    endif()
+
+    if(NOT "${MIP_LOGGING_MAX_LEVEL}" MATCHES "^MICROSTRAIN_LOGGING_LEVEL_OFF_$" AND NOT "${MIP_LOGGING_MAX_LEVEL}" MATCHES "^0$")
+        set(MIP_LOGGING_ENABLED ON)
+
+        message("MIP logging is enabled. Max level = '${MIP_LOGGING_MAX_LEVEL}'")
+    endif()
+endif()
 
 option(MICROSTRAIN_ENABLE_CPP "Enables the C++ API. Turn off to avoid compiling the C++ API." ON)
 #option(MICROSTRAIN_ENABLE_CPP_C_NAMESPACE "Wraps the C api in a C++ namespace to avoid global namespace pollution (e.g. microstrain::C::microstrain_serial_port)" ${MICROSTRAIN_ENABLE_CPP})
 message(DEBUG "MICROSTRAIN_ENABLE_CPP=${MICROSTRAIN_ENABLE_CPP}")
 if(MICROSTRAIN_ENABLE_CPP)
-    option(MICROSTRAIN_USE_STD_SPAN   "Use std::span from C++20 for microstrain::Span." ${MICROSTRAIN_COMPILER_SUPPORTS_SPAN})
-    option(MICROSTRAIN_USE_STD_ENDIAN "Use std::endian from C++20 for microstrain::Endian." ${MICROSTRAIN_COMPILER_SUPPORTS_BIT})
-    message(DEBUG "MICROSTRAIN_USE_STD_SPAN=${MICROSTRAIN_USE_STD_SPAN}")
+    option(MICROSTRAIN_USE_STD_ENDIAN "Use std::endian from C++20 for microstrain::Endian." OFF)
     message(DEBUG "MICROSTRAIN_USE_STD_ENDIAN=${MICROSTRAIN_USE_STD_ENDIAN}")
 endif()
 
@@ -60,7 +71,7 @@ option(MIP_ENABLE_DIAGNOSTICS "Enable various diagnostic counters in the mip lib
 if(NOT DEFINED MIP_ENABLE_METADATA)
     message(STATUS "MIP_ENABLE_METADATA not set - compiler support: ${MIP_COMPILER_SUPPORTS_METADATA}")
 endif()
-option(MIP_ENABLE_METADATA "Build support for MIP protocol metadata in C++ (requires c++20)" ${MIP_COMPILER_SUPPORTS_METADATA})
+option(MIP_ENABLE_METADATA "Build support for MIP protocol metadata in C++ (requires c++17)" ${MIP_COMPILER_SUPPORTS_METADATA})
 option(MIP_ENABLE_EXTRAS "Build extra support into the library including some things that might work at a higher level and use dynamically allocated memory" ${MICROSTRAIN_ENABLE_EXTRAS})
 
 # Include some utilities used for MicroStrain projects
@@ -72,7 +83,7 @@ include(microstrain_utilities)
 
 if(WIN32)
     if(MSVC)
-        set(MICROSTRAIN_PRIVATE_COMPILE_OPTIONS
+        set(MIP_PRIVATE_COMPILE_OPTIONS
             "/external:anglebrackets" # Treat angle brackets as system includes
             "/external:W0"            # No warnings from system includes
             "/W4"                     # Enable warnings
@@ -82,7 +93,7 @@ if(WIN32)
         )
 
         if(${MSVC_TOOLSET_VERSION} LESS 143)
-            list(APPEND MICROSTRAIN_PRIVATE_COMPILE_OPTIONS
+            list(APPEND MIP_PRIVATE_COMPILE_OPTIONS
                 "/wd4201" # Suppress warnings related to nameless structs/unions
             )
         endif()
@@ -90,19 +101,27 @@ if(WIN32)
 
     # Disable windows defined min/max
     # Set Windows header version (0x0501 is _WIN32_WINNT_WINXP, required for TCP)
-    set(MICROSTRAIN_PRIVATE_COMPILE_DEFINITIONS
+    set(MIP_PRIVATE_COMPILE_DEFINITIONS
         "NOMINMAX=1"
         "_WIN32_WINNT=_WIN32_WINNT_WINXP"
     )
-else()
-    set(MICROSTRAIN_PRIVATE_COMPILE_OPTIONS
+elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    set(MIP_PRIVATE_COMPILE_OPTIONS
         "-Wall"   # Enable warnings
         "-Wextra" # Enable extra warnings
         "-Werror" # Warnings as errors
     )
 
-    set(MICROSTRAIN_PRIVATE_COMPILE_DEFINITIONS "")
+    set(MIP_PRIVATE_COMPILE_DEFINITIONS "")
 endif()
+
+# TODO: Move to the MicroStrain SDK project when separated
+set(MICROSTRAIN_PRIVATE_COMPILE_OPTIONS "${MIP_PRIVATE_COMPILE_OPTIONS}")
+set(MICROSTRAIN_PRIVATE_COMPILE_DEFINITIONS "${MIP_PRIVATE_COMPILE_DEFINITIONS}")
+
+list(APPEND MIP_PRIVATE_COMPILE_DEFINITIONS
+    "MICROSTRAIN_LOGGING_MAX_LEVEL=${MIP_LOGGING_MAX_LEVEL}"
+)
 
 # Suppress warnings due to adding files with target_sources.
 cmake_policy(SET CMP0076 NEW)
@@ -180,10 +199,18 @@ if(MICROSTRAIN_BUILD_DOCUMENTATION)
     set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
 
     if(MICROSTRAIN_ENABLE_CPP)
-        set(DOXYGEN_PREDEFINED "__cplusplus")
+        list(APPEND DOXYGEN_PREDEFINED "__cplusplus")
     endif()
 
+    if(MIP_LOGGING_ENABLED)
+        list(APPEND DOXYGEN_PREDEFINED "MICROSTRAIN_LOGGING_MAX_LEVEL=${MIP_LOGGING_MAX_LEVEL}")
+    endif()
+
+    set(DOXYGEN_CASE_SENSE_NAMES YES)
     set(DOXYGEN_EXTRACT_ALL YES)
+    set(DOXYGEN_EXTRACT_STATIC YES)
+    set(DOXYGEN_SORT_MEMBER_DOCS NO) # Keep the order that things are defined instead of alphabetical
+    set(DOXYGEN_REPEAT_BRIEF NO) # Don't copy the brief in the details
 
     if(MICROSTRAIN_BUILD_DOCUMENTATION_FULL)
         set(DOXYGEN_INTERNAL_DOCS YES)
@@ -199,9 +226,46 @@ if(MICROSTRAIN_BUILD_DOCUMENTATION)
 
     set(DOXYGEN_HTML_EXTRA_STYLESHEET "${CMAKE_CURRENT_LIST_DIR}/docs/style.css")
 
+    set(MICROSTRAIN_EXAMPLES_DIR "${CMAKE_CURRENT_LIST_DIR}/examples")
+
     doxygen_add_docs(docs
-        "${MICROSTRAIN_SRC_DIR}" "${CMAKE_CURRENT_LIST_DIR}/docs"
+        "${MICROSTRAIN_SRC_DIR}"
+        "${CMAKE_CURRENT_LIST_DIR}/docs"
+        "${MICROSTRAIN_EXAMPLES_DIR}"
         COMMENT "Generating documentation."
+    )
+
+    # Fix Doxygen inline HTML parsing within the examples README.md file
+    # This is needed to tell Doxygen to treat the HTML table as HTML and not convert it to a Doxygen table
+    set(EXAMPLES_README_FILE "${MICROSTRAIN_EXAMPLES_DIR}/README")
+    set(EXAMPLES_README_CONFIG_FILE "${CMAKE_CURRENT_BINARY_DIR}/examples_readme.cmake")
+
+    file(CONFIGURE OUTPUT "${EXAMPLES_README_CONFIG_FILE}" CONTENT
+        "file(READ \"${EXAMPLES_README_FILE}.md\" CONTENT)\n
+# Wrap all <table> blocks with @htmlonly/@endhtmlonly
+string(REGEX REPLACE \"(<table)\" \"@htmlonly\\n\\\\1\" CONTENT \"\${CONTENT}\")\n
+string(REGEX REPLACE \"(</table>)\" \"\\\\1\\n@endhtmlonly\" CONTENT \"\${CONTENT}\")\n
+# Update the example page references
+string(REGEX REPLACE \"(<a href=\\\")([a-z]+)/([57]+)_([a-z]+)/([a-z]+)_([a-z]+)(\\\">)\" \"\\\\1group____\\\\3__\\\\4__\\\\5__\\\\6__example__\\\\2.html\\\\7\" CONTENT \"\${CONTENT}\")\n
+string(REGEX REPLACE \"(<a href=\\\")([a-z]+)/([57]+)_([a-z]+)/([a-z]+)(\\\">)\" \"\\\\1group____\\\\3__\\\\4__\\\\5__example__\\\\2.html\\\\6\" CONTENT \"\${CONTENT}\")\n
+string(REGEX REPLACE \"(<a href=\\\")([a-z]+)/([a-z]+)_([a-z]+)(\\\">)\" \"\\\\1group__\\\\3__\\\\4__example__\\\\2.html\\\\5\" CONTENT \"\${CONTENT}\")\n
+file(WRITE \"${EXAMPLES_README_FILE}.md\" \"\${CONTENT}\")"
+        @ONLY
+    )
+
+    set(MIP_PREPARE_EXAMPLES_README_TARGET "doxygen_prepare_examples_readme")
+
+    add_custom_target("${MIP_PREPARE_EXAMPLES_README_TARGET}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${EXAMPLES_README_FILE}.md" "${EXAMPLES_README_FILE}.bak"
+        COMMAND ${CMAKE_COMMAND} -P "${EXAMPLES_README_CONFIG_FILE}"
+        COMMENT "Preparing examples README.md for Doxygen"
+    )
+    add_dependencies(docs "${MIP_PREPARE_EXAMPLES_README_TARGET}")
+
+    add_custom_command(TARGET docs POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${EXAMPLES_README_FILE}.bak" "${EXAMPLES_README_FILE}.md"
+        COMMAND ${CMAKE_COMMAND} -E remove "${EXAMPLES_README_FILE}.bak"
+        COMMENT "Restoring original examples README.md"
     )
 
     # Add a target to enable users to zip up the docs
