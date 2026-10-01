@@ -1,3 +1,31 @@
+## microstrain_inertial (lyrical) - 4.10.0-1
+
+The packages in the `microstrain_inertial` repository were released into the `lyrical` distro by running `/usr/bin/bloom-release --ros-distro lyrical --no-web --non-interactive microstrain_inertial` on `Thu, 01 Oct 2026 17:06:23 -0000`
+
+These packages were released:
+- `microstrain_inertial_description`
+- `microstrain_inertial_driver`
+- `microstrain_inertial_examples`
+- `microstrain_inertial_msgs`
+- `microstrain_inertial_rqt`
+
+Version of package(s) in repository `microstrain_inertial`:
+
+- upstream repository: https://github.com/LORD-MicroStrain/microstrain_inertial.git
+- release repository: https://github.com/ros2-gbp/microstrain_inertial-release.git
+- rosdistro version: `4.8.0-3`
+- old version: `4.8.0-3`
+- new version: `4.10.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.14.4`
+- catkin_pkg version: `1.1.1`
+- rosdep version: `0.27.0`
+- rosdistro version: `1.1.0`
+- vcstools version: `0.1.42`
+
+
 ## microstrain_inertial (jazzy) - 4.10.0-1
 
 The packages in the `microstrain_inertial` repository were released into the `jazzy` distro by running `/usr/bin/bloom-release --ros-distro jazzy --no-web --non-interactive microstrain_inertial` on `Thu, 01 Oct 2026 17:03:20 -0000`
