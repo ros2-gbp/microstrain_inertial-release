@@ -2,7 +2,7 @@
 
 #include "readwrite.hpp"
 
-#include "../span.hpp"
+#include <microstrain/array_view.hpp>
 
 #include <array>
 
@@ -19,6 +19,16 @@
 
 namespace microstrain
 {
+
+////////////////////////////////////////////////////////////////////////////////
+///@addtogroup microstrain
+///@{
+////////////////////////////////////////////////////////////////////////////////
+///@addtogroup microstrain_serialization_cpp
+///
+///@brief (De)serialization in C++.
+///
+///@{
 
 ////////////////////////////////////////////////////////////////////////////////
 ///@brief Represents a view of a buffer of bytes of known capacity.
@@ -51,14 +61,14 @@ class SerializerBase
 {
 public:
     SerializerBase() = default;
-    SerializerBase(uint8_t* ptr, size_t capacity, size_t offset=0) : m_ptr(ptr), m_size(capacity), m_offset(offset) {}
-    SerializerBase(const uint8_t* ptr, size_t size, size_t offset=0) : m_ptr(const_cast<uint8_t*>(ptr)), m_size(size), m_offset(offset) {}
-    SerializerBase(microstrain::Span<const uint8_t> buffer, size_t offset=0) : m_ptr(const_cast<uint8_t*>(buffer.data())), m_size(buffer.size()), m_offset(offset) {}
+    SerializerBase(uint8_t* ptr, size_t capacity) : m_ptr(ptr), m_size(capacity), m_offset(0) {}
+    SerializerBase(const uint8_t* ptr, size_t size) : m_ptr(const_cast<uint8_t*>(ptr)), m_size(size), m_offset(0) {}
+    SerializerBase(microstrain::ConstU8ArrayView buffer) : m_ptr(const_cast<uint8_t*>(buffer.data())), m_size(buffer.size()), m_offset(0) {}
 
     size_t capacity()   const { return m_size;                 }  ///< Returns the total size of the buffer.
     size_t offset()     const { return m_offset;               }  ///< Returns the current read or write offset.
     size_t usedLength() const { return offset();               }  ///< Returns the number of bytes read/written.
-    int remaining()     const { return int(m_size - m_offset); }  ///< Returns the number of byte remaining (negative if overflowed).
+    int    remaining()  const { return int(m_size - m_offset); }  ///< Returns the number of byte remaining (negative if overflowed).
 
     bool isOverrun()                  const { return m_offset > m_size;        }  ///< Returns true if offset has exceeded the size/capacity.
     bool isOk()                       const { return !isOverrun();             }  ///< Returns true if not overrun, i.e. !isOverrun().
@@ -487,29 +497,29 @@ size_t extract(Serializer<E>& serializer, T* values, size_t count)
 ///@tparam T Type of array elements. Automatically deduced from the values parameter.
 ///
 ///@param serializer Serializer object pointing to the destination buffer.
-///@param values     Span containing pointer and count.
+///@param values     ArrayView containing pointer and count.
 ///
 ///@returns The total number of bytes written.
 ///
 template<serialization::Endian E, class T>
-size_t insert(Serializer<E>& serializer, microstrain::Span<const T> values)
+size_t insert(Serializer<E>& serializer, microstrain::ArrayView<const T> values)
 {
     return insert(serializer, values.data(), values.size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-///@brief Reads an array from a Serializer via a Span.
+///@brief Reads an array from a Serializer via an ArrayView.
 ///
 ///@tparam E Endianness of buffer. Automatically deduced from the serializer parameter.
 ///@tparam T Type of array elements. Automatically deduced from the values parameter.
 ///
 ///@param serializer Serializer object pointing to the source buffer.
-///@param values     Span containing pointer and count.
+///@param values     ArrayView containing pointer and count.
 ///
 ///@returns The total number of bytes read.
 ///
 template<serialization::Endian E, class T>
-size_t extract(Serializer<E>& serializer, microstrain::Span<const T> values)
+size_t extract(Serializer<E>& serializer, microstrain::ConstArrayView<T> values)
 {
     return extract(serializer, values.data(), values.size());
 }
@@ -721,7 +731,8 @@ size_t extract(Serializer<E>& serializer, T0& value0, T1& value1, Ts&... values)
 template<serialization::Endian E, class T>
 bool insert(const T& value, uint8_t* buffer, size_t buffer_length, size_t offset=0, bool exact_size=false)
 {
-    Serializer<E> serializer(buffer, buffer_length, offset);
+    Serializer<E> serializer(buffer, buffer_length);
+    serializer.setOffset(offset);
     serializer.insert(value);
     return exact_size ? serializer.isFinished() : serializer.isOk();
 }
@@ -759,18 +770,19 @@ bool insert(const T& value, uint8_t* buffer, size_t buffer_length, size_t offset
 template<serialization::Endian E, class T>
 bool extract(T& value, const uint8_t* buffer, size_t buffer_length, size_t offset=0, bool exact_size=false)
 {
-    Serializer<E> serializer(buffer, buffer_length, offset);
+    Serializer<E> serializer(buffer, buffer_length);
+    serializer.setOffset(offset);
     extract(serializer, value);
     return exact_size ? serializer.isFinished() : serializer.isOk();
 }
 
 
 //
-// Raw buffer - Span version
+// Raw buffer - ArrayView version
 //
 
 ////////////////////////////////////////////////////////////////////////////////
-///@brief Serializes a value to a raw byte buffer (span version).
+///@brief Serializes a value to a raw byte buffer (ArrayView version).
 ///
 /// Use this overload to write a single value without needing to
 /// manually construct a Serializer object.
@@ -788,13 +800,13 @@ bool extract(T& value, const uint8_t* buffer, size_t buffer_length, size_t offse
 ///@returns True otherwise.
 ///
 template<serialization::Endian E, class T>
-bool insert(T value, microstrain::Span<uint8_t> buffer, size_t offset=0, bool exact_size=false)
+bool insert(T value, microstrain::ArrayView<uint8_t> buffer, size_t offset=0, bool exact_size=false)
 {
     return insert<E,T>(value, buffer.data(), buffer.size(), offset, exact_size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-///@brief Deserializes a value from a raw byte buffer (span version).
+///@brief Deserializes a value from a raw byte buffer (ArrayView version).
 ///
 /// Use this overload to read a single value without needing to
 /// manually construct a Serializer object.
@@ -803,7 +815,7 @@ bool insert(T value, microstrain::Span<uint8_t> buffer, size_t offset=0, bool ex
 ///@tparam T Type of value. Automatically deduced from the value parameter.
 ///
 ///@param value         Parameter to deserialize. This can be any serializable type.
-///@param buffer        Source buffer span.
+///@param buffer        Source buffer.
 ///@param offset        Starting offset (default 0).
 ///@param exact_size    Returns true only if exactly buffer.size()-offset bytes are read. Default false.
 ///
@@ -812,7 +824,7 @@ bool insert(T value, microstrain::Span<uint8_t> buffer, size_t offset=0, bool ex
 ///@returns True otherwise.
 ///
 template<serialization::Endian E, class T>
-bool extract(T& value, microstrain::Span<const uint8_t> buffer, size_t offset=0, bool exact_size=false)
+bool extract(T& value, microstrain::ConstU8ArrayView buffer, size_t offset=0, bool exact_size=false)
 {
     return extract<E,T>(value, buffer.data(), buffer.size(), offset, exact_size);
 }
@@ -872,11 +884,11 @@ std::optional<T> extract(const uint8_t* buffer, size_t length, size_t offset, bo
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-///@brief Reads a value from a raw byte span and returns it via std::optional.
+///@brief Reads a value from a raw byte view and returns it via std::optional.
 ///
 /// This overload is only enabled if std::optional is supported.
 ///
-///@see bool extract(T& value, microstrain::Span<const uint8_t> buffer, size_t offset=0, bool exact_size=false)
+///@see bool extract(T& value, microstrain::ConstUint8ArrayView buffer, size_t offset=0, bool exact_size=false)
 ///
 ///@tparam E Endianness of buffer. Must be manually specified.
 ///@tparam T Type of value. Must be manually specified.
@@ -888,7 +900,7 @@ std::optional<T> extract(const uint8_t* buffer, size_t length, size_t offset, bo
 ///@returns The value read from the buffer, or std::nullopt if it couldn't be read.
 ///
 template<class T, serialization::Endian E>
-std::optional<T> extract(microstrain::Span<const uint8_t> buffer, size_t offset, bool exact_size=false)
+std::optional<T> extract(microstrain::ConstU8ArrayView buffer, size_t offset, bool exact_size=false)
 {
     T value;
     if(extract<E,T>(value, buffer.data(), buffer.size(), offset, exact_size))
@@ -992,5 +1004,9 @@ bool Serializer<E>::extract_count(T& count, S max_count)
     return false;
 }
 
+
+///@}
+///@}
+////////////////////////////////////////////////////////////////////////////////
 
 } // namespace microstrain
