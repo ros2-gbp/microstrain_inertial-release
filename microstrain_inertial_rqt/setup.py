@@ -26,7 +26,7 @@ if not os.path.isdir(common_resource_dir):
 
 setup(
     name=package_name,
-    version='4.8.0',
+    version='4.10.0',
     package_dir={'': common_src_dir},
     packages=find_packages(common_src_dir),
     data_files=[
@@ -44,11 +44,12 @@ setup(
     keywords=['ROS'],
     classifiers=[
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD',
         'Programming Language :: Python',
         'Topic :: Software Development',
     ],
     description='The microstrain_inertial_rqt package provides several RQT widgets to view the status of Microstrain devices',
     license='MIT',
-    tests_require=['pytest'],
+    extras_require={
+        'test': ['pytest'],
+    },
 )
