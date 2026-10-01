@@ -38,7 +38,10 @@ constexpr auto GPS_LEAP_SECONDS = 18;
 
 constexpr auto GNSS1_ID = 0;
 constexpr auto GNSS2_ID = 1;
-constexpr auto NUM_GNSS = 2;
+constexpr auto GNSS4_ID = 2;
+constexpr auto GNSS5_ID = 3;
+
+constexpr auto NUM_GNSS = 4;
 };  // namespace microstrain
 
 /**
@@ -102,6 +105,8 @@ constexpr auto NUM_GNSS = 2;
 #include "microstrain_inertial_msgs/Mip3dmGpioStateRead.h"
 #include "microstrain_inertial_msgs/Mip3dmGpioStateWrite.h"
 
+#include "microstrain_inertial_msgs/MipGnssReceiverReset.h"
+
 /**
  * ROS2 Includes
  */
@@ -113,11 +118,11 @@ constexpr auto NUM_GNSS = 2;
 #include "rclcpp_lifecycle/lifecycle_publisher.hpp"
 #endif
 
-#include "tf2_ros/buffer.h"
-#include "tf2_ros/buffer_interface.h"
-#include "tf2_ros/transform_listener.h"
-#include "tf2_ros/static_transform_broadcaster.h"
-#include "tf2_ros/transform_broadcaster.h"
+#include "tf2_ros/buffer.hpp"
+#include "tf2_ros/buffer_interface.hpp"
+#include "tf2_ros/transform_listener.hpp"
+#include "tf2_ros/static_transform_broadcaster.hpp"
+#include "tf2_ros/transform_broadcaster.hpp"
 
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
@@ -173,6 +178,8 @@ constexpr auto NUM_GNSS = 2;
 #include "microstrain_inertial_msgs/srv/mip3dm_capture_gyro_bias.hpp"
 #include "microstrain_inertial_msgs/srv/mip3dm_gpio_state_read.hpp"
 #include "microstrain_inertial_msgs/srv/mip3dm_gpio_state_write.hpp"
+
+#include "microstrain_inertial_msgs/srv/mip_gnss_receiver_reset.hpp"
 #else
 #error "Unsupported ROS version. -DMICROSTRAIN_ROS_VERSION must be set to 1 or 2"
 #endif
@@ -299,6 +306,8 @@ using MipBaseGetDeviceInformationSrv = ::microstrain_inertial_msgs::MipBaseGetDe
 using Mip3dmCaptureGyroBiasSrv = ::microstrain_inertial_msgs::Mip3dmCaptureGyroBias;
 using Mip3dmGpioStateReadSrv = microstrain_inertial_msgs::Mip3dmGpioStateRead;
 using Mip3dmGpioStateWriteSrv = microstrain_inertial_msgs::Mip3dmGpioStateWrite;
+
+using MipGnssReceiverResetSrv = microstrain_inertial_msgs::MipGnssReceiverReset;
 
 // ROS1 aliases not intended to be used outside this file
 using ParamIntVector = std::vector<int32_t>;
@@ -621,6 +630,8 @@ using Mip3dmCaptureGyroBiasSrv = microstrain_inertial_msgs::srv::Mip3dmCaptureGy
 using Mip3dmGpioStateReadSrv = microstrain_inertial_msgs::srv::Mip3dmGpioStateRead;
 using Mip3dmGpioStateWriteSrv = microstrain_inertial_msgs::srv::Mip3dmGpioStateWrite;
 
+using MipGnssReceiverResetSrv = microstrain_inertial_msgs::srv::MipGnssReceiverReset;
+
 // ROS2 aliases not intended to be used outside this file
 using ParamIntVector = std::vector<int64_t>;
 
@@ -768,7 +779,13 @@ inline TransformListenerType createTransformListener(TransformBufferType buffer)
  */
 inline StaticTransformBroadcasterType createStaticTransformBroadcaster(RosNodeType* node)
 {
+  #if MICROSTRAIN_ROLLING == 1
+  // Rolling expects a node-like object.
+  return std::make_shared<tf2_ros::StaticTransformBroadcaster>(*node);
+  #else
+  // Preserve the implementation required by older ROS 2 releases.
   return std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
+  #endif
 }
 
 /**
@@ -778,7 +795,13 @@ inline StaticTransformBroadcasterType createStaticTransformBroadcaster(RosNodeTy
  */
 inline TransformBroadcasterType createTransformBroadcaster(RosNodeType* node)
 {
+  #if MICROSTRAIN_ROLLING == 1
+  // Rolling expects a node-like object
+  return std::make_shared<tf2_ros::TransformBroadcaster>(*node);
+  #else
+  // Preserve the implementation required by older ROS 2 releases
   return std::make_shared<tf2_ros::TransformBroadcaster>(node);
+  #endif
 }
 
 /**
